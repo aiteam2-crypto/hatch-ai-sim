@@ -1,11 +1,10 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-// Define the headers once, with your specific origin.
 const corsHeaders = {
-    'Access-Control-Allow-Origin': 'https://hatch.ai.sim.lovable.app', // CRITICAL: Only allow your front-end domain
+    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS', // Allow the necessary methods
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 serve(async (req) => {
