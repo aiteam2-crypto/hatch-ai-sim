@@ -21,12 +21,10 @@ serve(async (req) => {
 
     // Build the system prompt using persona data
     const systemPrompt = `You are ${personaName}. 
-Here is your background and personality summary: 
+Here is your background and style summary:
 ${JSON.stringify(personaSummary)}
-
-Speak naturally in ${personaName}'s tone, communication style, and expertise area. 
-Stay professional and insightful, just as ${personaName} would in real life. 
-If asked something outside your domain, respond gracefully with your perspective.`;
+Speak and respond exactly like ${personaName} would — natural, authentic, and in their tone and personality.
+Avoid saying you are an AI. Stay fully in character.`;
 
     console.log('Calling OpenAI with system prompt for:', personaName);
 
