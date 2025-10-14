@@ -36,14 +36,12 @@ serve(async (req) => {
       throw new Error('Persona not found');
     }
 
-    // Check if both LinkedIn_data and Articles are populated
-    const hasLinkedInData = personaData.LinkedIn_data && 
-      typeof personaData.LinkedIn_data === 'object' && 
-      Object.keys(personaData.LinkedIn_data).length > 0;
+    // Check if both LinkedIn_data and Articles are populated (accept strings or objects)
+    const hasLinkedInData = (typeof personaData.LinkedIn_data === 'string' && personaData.LinkedIn_data.trim() !== '') ||
+      (personaData.LinkedIn_data && typeof personaData.LinkedIn_data === 'object' && Object.keys(personaData.LinkedIn_data).length > 0);
     
-    const hasArticles = personaData.Articles && 
-      typeof personaData.Articles === 'object' && 
-      Object.keys(personaData.Articles).length > 0;
+    const hasArticles = (typeof personaData.Articles === 'string' && personaData.Articles.trim() !== '') ||
+      (personaData.Articles && typeof personaData.Articles === 'object' && Object.keys(personaData.Articles).length > 0);
 
     if (!hasLinkedInData || !hasArticles) {
       console.error('LinkedIn_data or Articles not yet populated');
@@ -52,10 +50,16 @@ serve(async (req) => {
 
     console.log('Both LinkedIn_data and Articles are populated, proceeding with persona generation');
 
-    const scrapedData = JSON.stringify({
-      linkedin: personaData.LinkedIn_data,
-      articles: personaData.Articles
-    });
+    // Handle both string and object formats for scraped data
+    const linkedInContent = typeof personaData.LinkedIn_data === 'string' 
+      ? personaData.LinkedIn_data 
+      : JSON.stringify(personaData.LinkedIn_data);
+    
+    const articlesContent = typeof personaData.Articles === 'string'
+      ? personaData.Articles
+      : JSON.stringify(personaData.Articles);
+
+    const scrapedData = `LinkedIn Data:\n${linkedInContent}\n\nArticles:\n${articlesContent}`;
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
