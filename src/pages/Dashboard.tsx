@@ -173,16 +173,21 @@ const Dashboard = () => {
           
           console.log('n8n webhook triggered');
 
-          // Wait for n8n to scrape data (give it some time)
+          // Wait for n8n to populate the Summary field
           toast({
-            title: "Scraping data...",
-            description: "Collecting information from LinkedIn and web sources",
+            title: "Waiting for enrichment...",
+            description: "n8n is processing LinkedIn data and generating summary",
           });
-          await new Promise(resolve => setTimeout(resolve, 15000)); // Wait 15 seconds
+          
+          const summaryReady = await pollForSummary(insertedPersonaId);
+          
+          if (!summaryReady) {
+            throw new Error('Summary generation timed out after 90 seconds');
+          }
 
         } catch (webhookError) {
           console.error('Error in n8n workflow:', webhookError);
-          // Continue even if webhook fails
+          throw webhookError;
         }
       }
 
