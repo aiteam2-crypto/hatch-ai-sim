@@ -50,6 +50,7 @@ const Chat = () => {
       }
 
       try {
+        // Fetch persona data
         const { data, error } = await supabase
           .from("Persona")
           .select("*")
@@ -79,12 +80,31 @@ const Chat = () => {
         }
 
         setPersona(data);
-        setMessages([
-          {
-            role: "assistant",
-            content: `Hello! I'm ${data.Persona_Name}. Feel free to ask me anything!`
-          }
-        ]);
+
+        // Fetch conversation history from database
+        const { data: conversationData, error: conversationError } = await supabase
+          .from("Conversation")
+          .select("*")
+          .eq("persona_id", id)
+          .order("created_at", { ascending: true });
+
+        if (conversationError) {
+          console.error("Error fetching conversation:", conversationError);
+          // Continue with empty conversation if fetch fails
+          setMessages([]);
+        } else if (conversationData && conversationData.length > 0) {
+          // Load conversation history
+          const loadedMessages = conversationData.map((msg) => ({
+            role: msg.By_AI ? "assistant" : "user",
+            content: msg.message
+          }));
+          setMessages(loadedMessages as Message[]);
+          console.log(`Loaded ${loadedMessages.length} messages from conversation history`);
+        } else {
+          // No conversation history - this shouldn't happen as greeting is created during generation
+          console.warn("No conversation history found for persona");
+          setMessages([]);
+        }
       } catch (error) {
         console.error("Error fetching persona:", error);
         toast({
@@ -129,6 +149,24 @@ const Chat = () => {
       
       // Add AI message to UI
       setMessages(prev => [...prev, { role: "assistant", content: aiMessage }]);
+
+      // Save both messages to database for conversation history
+      await supabase.from("Conversation").insert([
+        {
+          User_id: persona.User_Id,
+          persona_id: persona.Persona_Id,
+          message: userMessage,
+          By_AI: false,
+          Session_ID: sessionId
+        },
+        {
+          User_id: persona.User_Id,
+          persona_id: persona.Persona_Id,
+          message: aiMessage,
+          By_AI: true,
+          Session_ID: sessionId
+        }
+      ]);
 
     } catch (error) {
       console.error("Error sending message:", error);
