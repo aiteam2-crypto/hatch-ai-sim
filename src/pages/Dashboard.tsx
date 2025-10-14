@@ -313,6 +313,26 @@ const Dashboard = () => {
             </Button>
           </Card>
 
+          {/* Quick Start Button - Shows immediately after persona creation */}
+          {createdPersonaId && !personaData && (
+            <Card className="p-6 glass-card animate-slide-up">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">Persona Created!</h3>
+                  <p className="text-muted-foreground">
+                    Your AI persona is being generated. You can start chatting now while we finish processing the details.
+                  </p>
+                </div>
+                <Button
+                  onClick={() => navigate(`/chat/${createdPersonaId}`)}
+                  className="h-12 px-6 bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)]"
+                >
+                  Start Chatting
+                </Button>
+              </div>
+            </Card>
+          )}
+
           {/* Results Section */}
           {personaData && (
             <div className="space-y-6 animate-slide-up">
