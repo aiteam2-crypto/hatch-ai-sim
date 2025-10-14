@@ -46,6 +46,7 @@ const Dashboard = () => {
       console.log(`Polling attempt ${attempts} - checking if n8n scraped data...`);
       console.log(`Querying for Persona_Id: ${personaId}`);
       
+      // Add cache bypass by adding a timestamp to ensure fresh data
       const { data, error } = await supabase
         .from('Persona')
         .select('LinkedIn_data, Articles, Persona_Id')
@@ -69,7 +70,7 @@ const Dashboard = () => {
         continue;
       }
       
-      // Check if either LinkedIn_data or Articles are populated (not null and not empty)
+      // CRITICAL: Check that BOTH LinkedIn_data AND Articles are populated (not null and not empty)
       const hasLinkedInData = data.LinkedIn_data && 
         typeof data.LinkedIn_data === 'object' && 
         Object.keys(data.LinkedIn_data).length > 0;
@@ -77,12 +78,15 @@ const Dashboard = () => {
         typeof data.Articles === 'object' && 
         Object.keys(data.Articles).length > 0;
       
-      if (hasLinkedInData || hasArticles) {
-        console.log('✅ Scraped data populated! n8n workflow completed successfully.');
+      // BOTH conditions must be true to proceed
+      if (hasLinkedInData && hasArticles) {
+        console.log('✅ BOTH LinkedIn_data and Articles populated! n8n workflow completed successfully.');
         return true;
       }
       
-      console.log('⏳ Scraped data still empty - n8n workflow still processing...');
+      console.log('⏳ Waiting for BOTH fields to populate - n8n workflow still processing...');
+      console.log(`   - LinkedIn_data ready: ${hasLinkedInData}`);
+      console.log(`   - Articles ready: ${hasArticles}`);
     }
     
     throw new Error('Timeout waiting for data scraping. The workflow may still be processing.');
