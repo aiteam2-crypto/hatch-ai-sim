@@ -138,8 +138,7 @@ const Chat = () => {
           messages: messages
             .concat(newUserMessage)
             .map(m => ({ role: m.role, content: m.content })),
-          personaName: persona.Persona_Name,
-          personaSummary: persona.Summary,
+          personaId: persona.Persona_Id,
         },
       });
 
