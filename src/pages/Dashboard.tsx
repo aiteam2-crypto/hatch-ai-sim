@@ -53,13 +53,6 @@ const Dashboard = () => {
         .eq('Persona_Id', personaId)
         .maybeSingle();
       
-      console.log(`Scraped data check (attempt ${attempts}):`, { 
-        data, 
-        error,
-        hasLinkedInData: !!data?.LinkedIn_data,
-        hasArticles: !!data?.Articles
-      });
-      
       if (error) {
         console.error('❌ Error polling for persona:', error);
         continue;
@@ -70,6 +63,17 @@ const Dashboard = () => {
         continue;
       }
       
+      // CRITICAL: Detailed data inspection
+      console.log('📊 Raw data inspection:');
+      console.log('  LinkedIn_data type:', typeof data.LinkedIn_data);
+      console.log('  LinkedIn_data value:', data.LinkedIn_data);
+      console.log('  LinkedIn_data is null:', data.LinkedIn_data === null);
+      console.log('  LinkedIn_data keys:', data.LinkedIn_data ? Object.keys(data.LinkedIn_data) : 'N/A');
+      console.log('  Articles type:', typeof data.Articles);
+      console.log('  Articles value:', data.Articles);
+      console.log('  Articles is null:', data.Articles === null);
+      console.log('  Articles keys:', data.Articles ? Object.keys(data.Articles) : 'N/A');
+      
       // CRITICAL: Check that BOTH LinkedIn_data AND Articles are populated (not null and not empty)
       const hasLinkedInData = data.LinkedIn_data && 
         typeof data.LinkedIn_data === 'object' && 
@@ -78,15 +82,17 @@ const Dashboard = () => {
         typeof data.Articles === 'object' && 
         Object.keys(data.Articles).length > 0;
       
+      console.log('✔️ Validation results:');
+      console.log(`  hasLinkedInData: ${hasLinkedInData}`);
+      console.log(`  hasArticles: ${hasArticles}`);
+      
       // BOTH conditions must be true to proceed
       if (hasLinkedInData && hasArticles) {
-        console.log('✅ BOTH LinkedIn_data and Articles populated! n8n workflow completed successfully.');
+        console.log('✅ SUCCESS: BOTH LinkedIn_data and Articles populated! Proceeding to persona generation.');
         return true;
       }
       
       console.log('⏳ Waiting for BOTH fields to populate - n8n workflow still processing...');
-      console.log(`   - LinkedIn_data ready: ${hasLinkedInData}`);
-      console.log(`   - Articles ready: ${hasArticles}`);
     }
     
     throw new Error('Timeout waiting for data scraping. The workflow may still be processing.');
