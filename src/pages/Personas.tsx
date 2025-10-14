@@ -1,9 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Logo } from "@/components/Logo";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { Header } from "@/components/Header";
 import { useNavigate } from "react-router-dom";
-import { User, MessageSquare, ArrowLeft } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 
 const mockPersonas = [
   {
@@ -34,35 +33,12 @@ const Personas = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/10">
-      {/* Header */}
-      <header className="border-b border-border/50 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <Logo />
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <User className="w-5 h-5" />
-            </Button>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Content */}
       <main className="container mx-auto px-6 py-12">
         <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
-          <div className="flex items-center justify-between">
-            <div>
-              <Button
-                variant="ghost"
-                onClick={() => navigate("/dashboard")}
-                className="mb-4 text-muted-foreground hover:text-foreground"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Dashboard
-              </Button>
-              <h1 className="text-4xl font-bold gradient-text">My Personas</h1>
-            </div>
-          </div>
+          <h1 className="text-4xl font-bold gradient-text">My Personas</h1>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {mockPersonas.map((persona) => (

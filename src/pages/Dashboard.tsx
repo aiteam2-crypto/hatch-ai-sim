@@ -2,8 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Logo } from "@/components/Logo";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { Header } from "@/components/Header";
 import { useNavigate } from "react-router-dom";
 import { User, Lightbulb, MessageCircleQuestion } from "lucide-react";
 
@@ -21,11 +20,15 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/10">
-      {/* Header */}
-      <header className="border-b border-border/50 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-8">
-            <Logo />
+      <Header showBackButton={false} />
+
+      {/* Main Content */}
+      <main className="container mx-auto px-6 py-12">
+        <div className="max-w-4xl mx-auto space-y-12 animate-fade-in">
+          <div className="flex items-center justify-between">
+            <h1 className="text-5xl font-bold gradient-text">
+              Create AI Personas
+            </h1>
             <Button
               variant="ghost"
               onClick={() => navigate("/personas")}
@@ -34,22 +37,6 @@ const Dashboard = () => {
               My Personas
             </Button>
           </div>
-          
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <User className="w-5 h-5" />
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-6 py-12">
-        <div className="max-w-4xl mx-auto space-y-12 animate-fade-in">
-          <h1 className="text-5xl font-bold text-center gradient-text">
-            Create AI Personas
-          </h1>
 
           {/* Input Section */}
           <Card className="p-8 glass-card shadow-[var(--shadow-elevated)]">

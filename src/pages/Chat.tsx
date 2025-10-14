@@ -2,10 +2,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { useParams } from "react-router-dom";
-import { Send, Plus, Search } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Send, Plus, Search, ArrowLeft, LogOut } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Message {
@@ -20,6 +19,7 @@ const mockChats = [
 
 const Chat = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -47,12 +47,39 @@ const Chat = () => {
     setInput("");
   };
 
+  const handleSignOut = () => {
+    navigate("/");
+  };
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate("/personas");
+    }
+  };
+
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-background via-background to-muted/10">
       {/* Sidebar */}
       <aside className="w-80 border-r border-border/50 backdrop-blur-sm bg-background/80 flex flex-col">
-        <div className="p-4 border-b border-border/50">
-          <Logo />
+        <div className="p-4 border-b border-border/50 flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleBack}
+            className="rounded-full"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleSignOut}
+            className="rounded-full text-muted-foreground hover:text-destructive"
+          >
+            <LogOut className="w-5 h-5" />
+          </Button>
         </div>
 
         <div className="p-4 space-y-4">
