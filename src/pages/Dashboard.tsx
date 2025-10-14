@@ -79,6 +79,8 @@ const Dashboard = () => {
     setPersonaData(null);
 
     try {
+      console.log('Calling generate-persona edge function...');
+      
       // Call the edge function
       const { data, error } = await supabase.functions.invoke('generate-persona', {
         body: {
@@ -88,12 +90,19 @@ const Dashboard = () => {
         }
       });
 
+      console.log('Edge function response:', { data, error });
+
       if (error) {
-        console.error('Edge function error:', error);
+        console.error('Edge function error details:', {
+          message: error.message,
+          context: error.context,
+          name: error.name
+        });
         throw new Error(error.message || 'Failed to generate persona');
       }
 
-      if (data.error) {
+      if (data?.error) {
+        console.error('Data error:', data.error);
         throw new Error(data.error);
       }
 
