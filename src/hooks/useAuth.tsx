@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const upsertUserProfile = async (user: User) => {
     try {
       const { error } = await supabase
-        .from('users')
+        .from('User')
         .upsert({
           user_email: user.email,
           user_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0],
