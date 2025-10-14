@@ -33,7 +33,7 @@ const Dashboard = () => {
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [personaData, setPersonaData] = useState<PersonaData | null>(null);
-  const [n8nWebhookUrl, setN8nWebhookUrl] = useState("");
+  const n8nWebhookUrl = "https://jags0101.app.n8n.cloud/webhook-test/f71075d7-ab4f-4242-92ad-a69c78d0f319";
 
   const handleGenerate = async () => {
     // Validate inputs
@@ -193,46 +193,29 @@ const Dashboard = () => {
 
           {/* Input Section */}
           <Card className="p-8 glass-card shadow-[var(--shadow-elevated)]">
-            <div className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Name of the person
-                  </label>
-                  <Input
-                    placeholder="e.g., John Smith"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="h-12"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground">
-                    LinkedIn URL
-                  </label>
-                  <Input
-                    placeholder="https://linkedin.com/in/..."
-                    value={linkedinUrl}
-                    onChange={(e) => setLinkedinUrl(e.target.value)}
-                    className="h-12"
-                  />
-                </div>
-              </div>
-
+            <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted-foreground">
-                  n8n Webhook URL (Optional)
+                  Name of the person
                 </label>
                 <Input
-                  placeholder="https://your-n8n-instance.com/webhook/..."
-                  value={n8nWebhookUrl}
-                  onChange={(e) => setN8nWebhookUrl(e.target.value)}
+                  placeholder="e.g., John Smith"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   className="h-12"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Add your n8n webhook URL to automatically trigger workflows when a persona is created
-                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground">
+                  LinkedIn URL
+                </label>
+                <Input
+                  placeholder="https://linkedin.com/in/..."
+                  value={linkedinUrl}
+                  onChange={(e) => setLinkedinUrl(e.target.value)}
+                  className="h-12"
+                />
               </div>
             </div>
 
