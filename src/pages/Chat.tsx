@@ -112,19 +112,6 @@ const Chat = () => {
     setMessages(prev => [...prev, newUserMessage]);
 
     try {
-      // Save user message to database
-      const { error: userError } = await supabase
-        .from("Conversation")
-        .insert({
-          Session_ID: sessionId,
-          User_id: persona.User_Id,
-          persona_id: persona.Persona_Id,
-          message: userMessage,
-          By_AI: false,
-        });
-
-      if (userError) throw userError;
-
       // Call OpenAI via edge function
       const { data, error } = await supabase.functions.invoke("chat-with-persona", {
         body: {
@@ -142,19 +129,6 @@ const Chat = () => {
       
       // Add AI message to UI
       setMessages(prev => [...prev, { role: "assistant", content: aiMessage }]);
-
-      // Save AI message to database
-      const { error: aiError } = await supabase
-        .from("Conversation")
-        .insert({
-          Session_ID: sessionId,
-          User_id: persona.User_Id,
-          persona_id: persona.Persona_Id,
-          message: aiMessage,
-          By_AI: true,
-        });
-
-      if (aiError) throw aiError;
 
     } catch (error) {
       console.error("Error sending message:", error);
