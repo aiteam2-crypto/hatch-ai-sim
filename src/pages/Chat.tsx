@@ -173,11 +173,14 @@ const Chat = () => {
 
   return (
     <div className="min-h-screen flex relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-primary/20 rounded-full blur-[120px] animate-float" />
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-secondary/20 rounded-full blur-[120px] animate-float-slow" />
-      </div>
+      {/* Cluely-style animated gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary via-secondary to-accent opacity-20 animate-gradient-shift"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(162,89,255,0.15),transparent_60%),radial-gradient(ellipse_at_top_right,rgba(42,250,223,0.15),transparent_60%)]"></div>
+      
+      {/* Floating emoji particles */}
+      <div className="absolute top-20 left-20 text-4xl animate-float opacity-30">💬</div>
+      <div className="absolute top-40 right-32 text-3xl animate-float opacity-20" style={{ animationDelay: '2s' }}>⚡</div>
+      <div className="absolute bottom-32 left-40 text-4xl animate-float opacity-25" style={{ animationDelay: '4s' }}>🌈</div>
 
       {/* Sidebar */}
       <aside className="w-80 border-r border-border/50 backdrop-blur-sm bg-background/80 flex flex-col relative z-10">
@@ -246,48 +249,50 @@ const Chat = () => {
 
         {/* Messages */}
         <ScrollArea className="flex-1 p-6">
-          <div className="max-w-3xl mx-auto space-y-6">
-            {messages.map((message, index) => (
+          <div className="max-w-4xl mx-auto space-y-6">
+            {messages.map((message, idx) => (
               <div
-                key={index}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} animate-slide-up`}
+                key={idx}
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
+                style={{ animationDelay: `${idx * 0.05}s` }}
               >
-                <Card
-                  className={`max-w-[80%] p-5 ${
-                    message.role === "user"
-                      ? "bg-gradient-to-r from-primary to-secondary text-primary-foreground shadow-lg rounded-2xl rounded-tr-sm"
-                      : "glass-card-glow rounded-2xl rounded-tl-sm"
+                <div
+                  className={`max-w-[80%] p-6 rounded-3xl backdrop-blur-xl transition-all duration-300 hover:scale-[1.02] ${
+                    message.role === 'user'
+                      ? 'bg-gradient-to-br from-primary/30 to-accent/30 border border-primary/40 shadow-lg glow-primary'
+                      : 'bg-gradient-to-br from-secondary/30 to-accent/30 border border-secondary/40 shadow-lg glow-secondary'
                   }`}
                 >
-                  <p className="leading-relaxed">{message.content}</p>
-                </Card>
+                  <p className="text-foreground leading-relaxed text-lg">{message.content}</p>
+                </div>
               </div>
             ))}
           </div>
         </ScrollArea>
 
         {/* Input Area */}
-        <div className="p-6 border-t border-border/50 backdrop-blur-sm bg-background/80">
-          <div className="max-w-3xl mx-auto flex gap-4">
-            <Input
-              placeholder="Type your message... 💭"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSend()}
-              className="flex-1 h-14 text-base rounded-2xl border-2 focus:border-primary transition-all"
-            />
-            <Button
-              onClick={handleSend}
-              size="icon"
-              disabled={isSending || !input.trim()}
-              className="h-14 w-14 rounded-2xl bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)] disabled:opacity-50 hover:scale-105 transition-all"
-            >
-              {isSending ? (
-                <Loader2 className="w-6 h-6 animate-spin" />
-              ) : (
-                <Send className="w-6 h-6" />
-              )}
-            </Button>
+        <div className="border-t border-border/30 bg-gradient-to-r from-card/70 via-card/80 to-card/70 backdrop-blur-xl p-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex gap-4">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                placeholder="Type your message... 💬"
+                disabled={isSending}
+                className="flex-1 rounded-3xl py-7 text-lg border-primary/40 focus:border-primary bg-background/60 backdrop-blur-xl hover:bg-background/70 transition-all font-medium"
+              />
+              <Button
+                onClick={handleSend}
+                disabled={isSending || !input.trim()}
+                className="px-10 py-7 rounded-3xl bg-gradient-to-r from-primary via-accent to-secondary hover:shadow-neon transition-all duration-300 hover:scale-105 font-bold text-lg relative overflow-hidden group"
+              >
+                <span className="relative z-10">
+                  {isSending ? "Sending..." : "Send 🚀"}
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-secondary via-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              </Button>
+            </div>
           </div>
         </div>
       </main>

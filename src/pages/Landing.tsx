@@ -66,59 +66,67 @@ const Landing = () => {
   ];
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-b from-background via-background to-muted/20">
-      {/* Animated Background Particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-[120px] animate-float" />
-        <div className="absolute top-40 right-20 w-96 h-96 bg-secondary/20 rounded-full blur-[120px] animate-float-slow" />
-        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-accent/20 rounded-full blur-[120px] animate-float" />
-      </div>
+      <div className="min-h-screen relative overflow-hidden">
+      {/* Cluely-style Animated Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary via-secondary to-accent opacity-30 animate-gradient-shift"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(162,89,255,0.3),transparent_50%),radial-gradient(ellipse_at_bottom_left,rgba(42,250,223,0.3),transparent_50%)]"></div>
+      
+      {/* Floating particles */}
+      <div className="absolute top-20 left-10 w-32 h-32 bg-accent/20 rounded-full blur-2xl animate-float"></div>
+      <div className="absolute bottom-40 right-20 w-40 h-40 bg-primary/30 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute top-1/2 right-1/4 w-36 h-36 bg-secondary/20 rounded-full blur-2xl animate-float" style={{ animationDelay: '4s' }}></div>
 
       {/* Content */}
       <div className="relative z-10">
         {/* Glassy Navbar */}
-        <header className="sticky top-0 z-50 glass-card border-b">
+        <header className="sticky top-0 z-50 glass-card border-b border-border/30 backdrop-blur-xl">
           <div className="container mx-auto px-6 py-4 flex justify-between items-center">
             <Logo />
             <ThemeToggle />
           </div>
         </header>
 
-        {/* Hero Section */}
-        <section className="container mx-auto px-6 py-20 md:py-32">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8 animate-fade-in">
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-tight">
-                <span className="gradient-text animate-fade-in">Create AI Personas.</span>
-                <br />
-                <span className="gradient-text animate-fade-in" style={{ animationDelay: '0.2s' }}>Chat Like Never Before.</span>
-                <br />
-                <span className="text-4xl md:text-5xl lg:text-6xl">⚡💬✨</span>
+        {/* Hero Section - Cluely-inspired */}
+        <section className="container mx-auto px-6 py-24 md:py-40">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="space-y-10 animate-fade-in">
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.1]">
+                <span className="gradient-text block mb-3">Create AI Personas.</span>
+                <span className="gradient-text block mb-3">Chat Like Never Before.</span>
+                <span className="text-5xl md:text-6xl">✨💬🚀</span>
               </h1>
               
-              <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl leading-relaxed">
-                Talk to AI versions of real professionals. Research, learn, and engage through intelligent simulations powered by next-gen technology. 🚀
+              <p className="text-xl md:text-2xl text-foreground/80 max-w-2xl leading-relaxed font-light">
+                Turn LinkedIn profiles into living, breathing AI personalities. Experience the future of AI conversations.
               </p>
 
-              <div className="flex flex-wrap gap-4 pt-4">
+              <div className="flex flex-wrap gap-4 pt-6">
                 <Button
                   size="lg"
                   onClick={() => navigate("/signin")}
-                  className="text-lg px-10 py-7 rounded-full bg-gradient-to-r from-primary via-secondary to-accent hover:shadow-[var(--shadow-neon)] transition-all duration-500 hover:scale-110 group animate-glow-pulse"
+                  className="text-xl px-16 py-10 rounded-3xl bg-gradient-to-r from-primary via-accent to-secondary hover:shadow-neon transition-all duration-500 hover:scale-110 group font-bold relative overflow-hidden"
                 >
-                  Get Started 💬
-                  <ArrowRight className="ml-2 group-hover:translate-x-2 transition-transform" />
+                  <span className="relative z-10 flex items-center gap-3">
+                    Continue with Google 🚀
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-accent via-secondary to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <ArrowRight className="ml-2 group-hover:translate-x-3 transition-transform relative z-10" />
                 </Button>
               </div>
             </div>
 
-            {/* Holographic Avatar */}
+            {/* Animated Holographic Avatar */}
             <div className="relative hidden lg:block">
-              <div className="relative w-full h-[500px] flex items-center justify-center">
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/30 via-secondary/30 to-accent/30 rounded-full blur-3xl animate-glow-shift" />
-                <div className="relative glass-card-glow p-12 rounded-3xl animate-hologram">
-                  <Brain className="w-48 h-48 text-primary" />
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-3xl" />
+              <div className="relative w-full h-[550px] flex items-center justify-center">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/40 via-secondary/40 to-accent/40 rounded-full blur-[100px] animate-pulse glow-neon" />
+                <div className="relative glass-card-glow p-16 rounded-[3rem] animate-float">
+                  <Brain className="w-56 h-56 text-primary drop-shadow-2xl" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-secondary/30 rounded-[3rem] animate-pulse" style={{ animationDelay: '1s' }} />
+                  
+                  {/* Floating particles around brain */}
+                  <div className="absolute top-10 -right-10 w-4 h-4 bg-accent rounded-full animate-ping"></div>
+                  <div className="absolute bottom-16 -left-8 w-3 h-3 bg-primary rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
+                  <div className="absolute top-1/2 -right-12 w-2 h-2 bg-secondary rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
                 </div>
               </div>
             </div>
