@@ -40,10 +40,14 @@ All colors MUST be HSL.
     
     /* Custom design tokens */
     --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(270 60% 65%) 100%);
+    --gradient-cinematic: linear-gradient(135deg, hsl(230 80% 15%) 0%, hsl(260 70% 25%) 50%, hsl(217 91% 60%) 100%);
+    --gradient-glow: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(270 60% 65%) 50%, hsl(200 100% 50%) 100%);
     --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 40% 98%) 100%);
     --glow-primary: 0 0 40px hsl(217 91% 60% / 0.3);
     --glow-secondary: 0 0 40px hsl(270 60% 65% / 0.3);
+    --glow-electric: 0 0 80px hsl(200 100% 50% / 0.4);
     --shadow-elevated: 0 10px 40px -10px hsl(220 20% 10% / 0.1);
+    --shadow-neon: 0 0 30px hsl(217 91% 60% / 0.5), 0 0 60px hsl(270 60% 65% / 0.3);
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     --sidebar-background: 0 0% 98%;
@@ -64,13 +68,13 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 220 30% 8%;
+    --background: 230 50% 4%;
     --foreground: 0 0% 98%;
 
-    --card: 220 25% 12%;
+    --card: 230 40% 8%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 220 25% 12%;
+    --popover: 230 40% 8%;
     --popover-foreground: 0 0% 98%;
 
     --primary: 217 91% 60%;
@@ -79,24 +83,28 @@ All colors MUST be HSL.
     --secondary: 270 60% 65%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 20% 20%;
+    --muted: 230 30% 15%;
     --muted-foreground: 220 10% 65%;
 
-    --accent: 217 91% 60%;
+    --accent: 200 100% 50%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 20% 20%;
-    --input: 220 20% 20%;
+    --border: 230 30% 20%;
+    --input: 230 30% 20%;
     --ring: 217 91% 60%;
     
     --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(270 60% 65%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(220 30% 8%) 0%, hsl(220 25% 12%) 100%);
-    --glow-primary: 0 0 60px hsl(217 91% 60% / 0.4);
-    --glow-secondary: 0 0 60px hsl(270 60% 65% / 0.4);
+    --gradient-cinematic: linear-gradient(135deg, hsl(230 80% 15%) 0%, hsl(260 70% 25%) 50%, hsl(217 91% 60%) 100%);
+    --gradient-glow: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(270 60% 65%) 50%, hsl(200 100% 50%) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(230 50% 4%) 0%, hsl(230 40% 8%) 100%);
+    --glow-primary: 0 0 60px hsl(217 91% 60% / 0.5);
+    --glow-secondary: 0 0 60px hsl(270 60% 65% / 0.5);
+    --glow-electric: 0 0 100px hsl(200 100% 50% / 0.6);
     --shadow-elevated: 0 10px 40px -10px hsl(0 0% 0% / 0.5);
+    --shadow-neon: 0 0 40px hsl(217 91% 60% / 0.6), 0 0 80px hsl(270 60% 65% / 0.4);
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -127,16 +135,74 @@ All colors MUST be HSL.
     box-shadow: var(--glow-secondary);
   }
   
+  .glow-electric {
+    box-shadow: var(--glow-electric);
+  }
+  
+  .glow-neon {
+    box-shadow: var(--shadow-neon);
+  }
+  
   .gradient-text {
-    background: var(--gradient-primary);
+    background: var(--gradient-glow);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease infinite;
+  }
+  
+  .gradient-cinematic {
+    background: var(--gradient-cinematic);
   }
   
   .glass-card {
-    background: hsl(var(--card) / 0.7);
-    backdrop-filter: blur(12px);
-    border: 1px solid hsl(var(--border) / 0.5);
+    background: hsl(var(--card) / 0.4);
+    backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--border) / 0.3);
+  }
+  
+  .glass-card-glow {
+    background: hsl(var(--card) / 0.3);
+    backdrop-filter: blur(24px);
+    border: 1px solid hsl(var(--primary) / 0.3);
+    box-shadow: var(--shadow-neon);
+  }
+  
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+  
+  @keyframes particle-float {
+    0%, 100% {
+      transform: translate(0, 0);
+      opacity: 0.3;
+    }
+    50% {
+      transform: translate(10px, -10px);
+      opacity: 0.6;
+    }
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-particle {
+    animation: particle-float 4s ease-in-out infinite;
   }
 }
