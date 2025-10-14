@@ -33,6 +33,7 @@ const Dashboard = () => {
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [personaData, setPersonaData] = useState<PersonaData | null>(null);
+  const [n8nWebhookUrl, setN8nWebhookUrl] = useState("");
 
   const handleGenerate = async () => {
     // Validate inputs
@@ -109,13 +110,15 @@ const Dashboard = () => {
       setPersonaData(data);
 
       // Insert persona record into database
-      const { error: insertError } = await supabase
+      const { data: insertedPersona, error: insertError } = await supabase
         .from('Persona')
         .insert({
           Persona_Name: name,
           LinkedIn_URL: linkedinUrl,
           User_Id: user.id
-        });
+        })
+        .select()
+        .single();
 
       if (insertError) {
         console.error('Error inserting persona:', insertError);
@@ -129,6 +132,31 @@ const Dashboard = () => {
           title: "Persona Generated!",
           description: "Your AI persona is ready to chat",
         });
+
+        // Trigger n8n webhook if URL is provided
+        if (n8nWebhookUrl) {
+          try {
+            console.log('Triggering n8n webhook...');
+            await supabase.functions.invoke('trigger-n8n', {
+              body: {
+                webhookUrl: n8nWebhookUrl,
+                personaData: {
+                  id: insertedPersona.Persona_ID,
+                  name: name,
+                  linkedinUrl: linkedinUrl,
+                  userId: user.id,
+                  summary: data.personaSummary,
+                  instructions: data.chatbotInstructions,
+                  createdAt: new Date().toISOString()
+                }
+              }
+            });
+            console.log('n8n webhook triggered successfully');
+          } catch (webhookError) {
+            console.error('Error triggering n8n webhook:', webhookError);
+            // Don't show error to user as persona was created successfully
+          }
+        }
       }
 
     } catch (error) {
@@ -165,29 +193,46 @@ const Dashboard = () => {
 
           {/* Input Section */}
           <Card className="p-8 glass-card shadow-[var(--shadow-elevated)]">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">
-                  Name of the person
-                </label>
-                <Input
-                  placeholder="e.g., John Smith"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="h-12"
-                />
+            <div className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Name of the person
+                  </label>
+                  <Input
+                    placeholder="e.g., John Smith"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="h-12"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground">
+                    LinkedIn URL
+                  </label>
+                  <Input
+                    placeholder="https://linkedin.com/in/..."
+                    value={linkedinUrl}
+                    onChange={(e) => setLinkedinUrl(e.target.value)}
+                    className="h-12"
+                  />
+                </div>
               </div>
-              
+
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted-foreground">
-                  LinkedIn URL
+                  n8n Webhook URL (Optional)
                 </label>
                 <Input
-                  placeholder="https://linkedin.com/in/..."
-                  value={linkedinUrl}
-                  onChange={(e) => setLinkedinUrl(e.target.value)}
+                  placeholder="https://your-n8n-instance.com/webhook/..."
+                  value={n8nWebhookUrl}
+                  onChange={(e) => setN8nWebhookUrl(e.target.value)}
                   className="h-12"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Add your n8n webhook URL to automatically trigger workflows when a persona is created
+                </p>
               </div>
             </div>
 
