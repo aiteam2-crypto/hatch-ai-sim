@@ -149,33 +149,12 @@ const Dashboard = () => {
       setCreatedPersonaId(insertedPersonaId);
       console.log('Persona inserted with ID:', insertedPersonaId);
 
-      // Step 2: Generate AI persona
-      toast({
-        title: "Generating profile...",
-        description: "AI is analyzing the persona details",
-      });
-
-      const { data, error } = await supabase.functions.invoke('generate-persona', {
-        body: {
-          name,
-          linkedinUrl,
-          scrapedData: `Professional profile for ${name}. Based on LinkedIn and public sources.`
-        }
-      });
-
-      if (error || data?.error) {
-        console.error('Edge function error:', error || data.error);
-        throw new Error(error?.message || data?.error || 'Failed to generate persona');
-      }
-
-      setPersonaData(data);
-
-      // Step 3: Trigger n8n webhook for summary generation
+      // Step 2: Trigger n8n webhook for data scraping
       if (n8nWebhookUrl && insertedPersonaId) {
         try {
           toast({
             title: "Enriching profile...",
-            description: "Generating detailed summary",
+            description: "Scraping data from web sources",
           });
 
           await supabase.functions.invoke('trigger-n8n', {
@@ -186,8 +165,6 @@ const Dashboard = () => {
                 Persona_Name: name,
                 LinkedIn_URL: linkedinUrl,
                 User_Id: user.id,
-                summary: data.personaSummary,
-                instructions: data.chatbotInstructions,
                 created_at: new Date().toISOString()
               }
             }
@@ -195,21 +172,12 @@ const Dashboard = () => {
           
           console.log('n8n webhook triggered');
 
-          // Step 4: Poll for summary
+          // Wait for n8n to scrape data (give it some time)
           toast({
-            title: "Processing...",
-            description: "Waiting for summary generation (up to 90 seconds)",
+            title: "Scraping data...",
+            description: "Collecting information from LinkedIn and web sources",
           });
-
-          const summaryReady = await pollForSummary(insertedPersonaId);
-          
-          if (!summaryReady) {
-            toast({
-              title: "Summary Still Processing",
-              description: "Summary generation is still processing. You'll be notified when it's ready.",
-              variant: "default",
-            });
-          }
+          await new Promise(resolve => setTimeout(resolve, 15000)); // Wait 15 seconds
 
         } catch (webhookError) {
           console.error('Error in n8n workflow:', webhookError);
@@ -217,12 +185,29 @@ const Dashboard = () => {
         }
       }
 
-      // Step 5: Create chatbot conversation
+      // Step 3: Generate AI persona from scraped data
+      toast({
+        title: "Generating profile...",
+        description: "AI is analyzing the persona details",
+      });
+
+      const { data, error } = await supabase.functions.invoke('generate-persona', {
+        body: { personaId: insertedPersonaId }
+      });
+
+      if (error || data?.error) {
+        console.error('Edge function error:', error || data.error);
+        throw new Error(error?.message || data?.error || 'Failed to generate persona');
+      }
+
+      setPersonaData(data);
+
+      // Step 4: Create chatbot conversation
       if (insertedPersonaId) {
         await createChatbotConversation(insertedPersonaId, name);
       }
 
-      // Step 6: Success
+      // Step 5: Success
       toast({
         title: `✅ ${name} has been created!`,
         description: "Summary generated successfully — start chatting now.",

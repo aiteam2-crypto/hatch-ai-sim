@@ -15,8 +15,34 @@ serve(async (req) => {
   console.log(`Call to 'generate-persona' function called`);
 
   try {
-    const { name, linkedInUrl, scrapedData } = await req.json();
-    console.log(`Request received: { name, linkedInUrl }`, { name, linkedInUrl });
+    const { personaId } = await req.json();
+    console.log(`Request received for personaId: ${personaId}`);
+
+    // Fetch persona data from database
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    
+    const { data: persona, error: fetchError } = await fetch(
+      `${supabaseUrl}/rest/v1/Persona?Persona_Id=eq.${personaId}&select=*`,
+      {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+        }
+      }
+    ).then(r => r.json());
+
+    if (fetchError || !persona || persona.length === 0) {
+      console.error('Failed to fetch persona:', fetchError);
+      throw new Error('Persona not found');
+    }
+
+    const personaData = persona[0];
+    const scrapedData = JSON.stringify({
+      linkedin: personaData.LinkedIn_data,
+      youtube: personaData.Youtube,
+      articles: personaData.Articles
+    });
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -76,11 +102,11 @@ You MUST output valid JSON with this exact structure:
 - Output ONLY valid JSON, no markdown formatting, no extra text.`;
 
     const userPrompt = `Generate an AI persona for:
-Name: ${name}
-LinkedIn: ${linkedInUrl}
+Name: ${personaData.Persona_Name}
+LinkedIn: ${personaData.LinkedIn_URL}
 
 Scraped Data:
-${scrapedData || 'Limited data available - use the name and LinkedIn to infer a professional persona based on typical profiles.'}`;
+${scrapedData}`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -120,17 +146,39 @@ ${scrapedData || 'Limited data available - use the name and LinkedIn to infer a 
     const data = await response.json();
     const content = data.choices[0].message.content;
 
-    let personaData;
+    let generatedPersona;
     try {
       const cleanedContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      personaData = JSON.parse(cleanedContent);
+      generatedPersona = JSON.parse(cleanedContent);
     } catch (parseError) {
       console.error('Failed to parse AI response:', content);
       throw new Error('Invalid JSON response from AI');
     }
 
+    // Update persona in database with generated summary
+    const updateResponse = await fetch(
+      `${supabaseUrl}/rest/v1/Persona?Persona_Id=eq.${personaId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          Summary: generatedPersona
+        })
+      }
+    );
+
+    if (!updateResponse.ok) {
+      console.error('Failed to update persona');
+      throw new Error('Failed to save persona summary');
+    }
+
     return new Response(
-      JSON.stringify(personaData),
+      JSON.stringify(generatedPersona),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
