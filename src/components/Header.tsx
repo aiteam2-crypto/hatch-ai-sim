@@ -41,7 +41,7 @@ export const Header = ({ showBackButton = true, showUserMenu = true }: HeaderPro
   };
 
   return (
-    <header className="border-b border-border/50 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
+    <header className="border-b border-border/50 backdrop-blur-xl sticky top-0 z-50 bg-background/80 shadow-lg">
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-4">
           {showBackButton && (
@@ -49,7 +49,7 @@ export const Header = ({ showBackButton = true, showUserMenu = true }: HeaderPro
               variant="ghost"
               size="icon"
               onClick={handleBack}
-              className="rounded-full"
+              className="rounded-xl hover:bg-primary/10 hover:scale-110 transition-all"
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
@@ -62,26 +62,30 @@ export const Header = ({ showBackButton = true, showUserMenu = true }: HeaderPro
             <ThemeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="rounded-xl hover:bg-primary/10 hover:scale-110 transition-all"
+                >
                   <User className="w-5 h-5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-background/95 backdrop-blur-sm border-border/50">
+              <DropdownMenuContent align="end" className="w-56 glass-card border-border/50">
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-semibold leading-none">{currentUser.name}</p>
+                    <p className="text-sm font-semibold leading-none gradient-text">{currentUser.name}</p>
                     <p className="text-xs leading-none text-muted-foreground">
                       {currentUser.email}
                     </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer">
+                <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer hover:bg-primary/5">
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive focus:text-destructive">
+                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive focus:text-destructive hover:bg-destructive/10">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Sign Out</span>
                 </DropdownMenuItem>

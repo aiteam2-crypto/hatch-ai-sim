@@ -89,25 +89,25 @@ const Landing = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8 animate-fade-in">
               <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-tight">
-                <span className="gradient-text">Simulate</span>
+                <span className="gradient-text animate-fade-in">Create AI Personas.</span>
                 <br />
-                <span className="gradient-text">Realistic AI</span>
+                <span className="gradient-text animate-fade-in" style={{ animationDelay: '0.2s' }}>Chat Like Never Before.</span>
                 <br />
-                <span className="gradient-text">Personas</span>
+                <span className="text-4xl md:text-5xl lg:text-6xl">⚡💬✨</span>
               </h1>
               
               <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl leading-relaxed">
-                Talk to AI versions of real professionals. Research, learn, and engage through intelligent simulations powered by next-gen technology.
+                Talk to AI versions of real professionals. Research, learn, and engage through intelligent simulations powered by next-gen technology. 🚀
               </p>
 
               <div className="flex flex-wrap gap-4 pt-4">
                 <Button
                   size="lg"
                   onClick={() => navigate("/signin")}
-                  className="text-lg px-8 py-6 rounded-full bg-gradient-to-r from-primary via-secondary to-accent hover:shadow-[var(--shadow-neon)] transition-all duration-500 hover:scale-105 group"
+                  className="text-lg px-10 py-7 rounded-full bg-gradient-to-r from-primary via-secondary to-accent hover:shadow-[var(--shadow-neon)] transition-all duration-500 hover:scale-110 group animate-glow-pulse"
                 >
-                  Get Started
-                  <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+                  Get Started 💬
+                  <ArrowRight className="ml-2 group-hover:translate-x-2 transition-transform" />
                 </Button>
               </div>
             </div>
@@ -315,7 +315,7 @@ const Landing = () => {
                 onClick={() => navigate("/signin")}
                 className="text-lg px-12 py-6 rounded-full bg-gradient-to-r from-primary via-secondary to-accent hover:shadow-[var(--shadow-neon)] transition-all duration-500 hover:scale-105 group"
               >
-                Get Started Free
+                Get Started Free 🎉
                 <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>

@@ -47,70 +47,89 @@ const Personas = () => {
   }, [toast]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/10">
-      <Header />
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5">
+        <div className="absolute top-20 left-10 w-96 h-96 bg-primary/20 rounded-full blur-[120px] animate-float" />
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-secondary/20 rounded-full blur-[120px] animate-float-slow" />
+      </div>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-6 py-12">
-        <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
-          <h1 className="text-4xl font-bold gradient-text">My Personas</h1>
+      <div className="relative z-10">
+        <Header />
 
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin" />
+        {/* Main Content */}
+        <main className="container mx-auto px-6 py-12">
+          <div className="max-w-6xl mx-auto space-y-10 animate-fade-in">
+            <div className="text-center space-y-4">
+              <h1 className="text-5xl md:text-6xl font-bold gradient-text">My Personas 💫</h1>
+              <p className="text-lg text-muted-foreground">Chat with your AI personas anytime</p>
             </div>
-          ) : personas.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground mb-4">No personas found. Create one to get started!</p>
-              <Button onClick={() => navigate("/dashboard")}>
-                Create Persona
-              </Button>
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {personas.map((persona) => (
-                <Card
-                  key={persona.Persona_Id}
-                  className="p-6 glass-card hover:shadow-[var(--glow-primary)] transition-all duration-300 cursor-pointer group"
-                  onClick={() => navigate(`/chat/${persona.Persona_Id}`)}
-                >
-                  <div className="space-y-4">
-                    <div className="flex items-start justify-between">
-                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-semibold text-xl">
-                        {persona.Persona_Name.split(' ').map(n => n[0]).join('')}
+
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-4">
+                <Loader2 className="w-12 h-12 animate-spin text-primary" />
+                <p className="text-muted-foreground">Loading your personas...</p>
+              </div>
+            ) : personas.length === 0 ? (
+              <Card className="p-12 glass-card-glow text-center">
+                <div className="max-w-md mx-auto space-y-6">
+                  <div className="text-6xl">🎭</div>
+                  <h3 className="text-2xl font-bold">No personas yet</h3>
+                  <p className="text-muted-foreground">Create your first AI persona to get started!</p>
+                  <Button 
+                    onClick={() => navigate("/dashboard")}
+                    size="lg"
+                    className="bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)] rounded-2xl font-semibold"
+                  >
+                    Create Persona ✨
+                  </Button>
+                </div>
+              </Card>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {personas.map((persona) => (
+                  <Card
+                    key={persona.Persona_Id}
+                    className="p-8 glass-card-glow hover:scale-105 transition-all duration-300 cursor-pointer group border-2 border-transparent hover:border-primary/50"
+                    onClick={() => navigate(`/chat/${persona.Persona_Id}`)}
+                  >
+                    <div className="space-y-6">
+                      <div className="flex items-start justify-between">
+                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center text-white font-bold text-2xl shadow-lg group-hover:shadow-[var(--glow-primary)] transition-shadow">
+                          {persona.Persona_Name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                        </div>
+                        <MessageSquare className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
                       </div>
-                      <MessageSquare className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
 
-                    <div>
-                      <h3 className="text-xl font-semibold mb-1">{persona.Persona_Name}</h3>
-                      {persona.Summary?.role && (
-                        <p className="text-sm text-muted-foreground">{persona.Summary.role}</p>
+                      <div>
+                        <h3 className="text-2xl font-bold mb-2 group-hover:gradient-text transition-all">{persona.Persona_Name}</h3>
+                        {persona.Summary?.role && (
+                          <p className="text-sm font-semibold text-primary">{persona.Summary.role}</p>
+                        )}
+                        {persona.Summary?.company && (
+                          <p className="text-sm text-muted-foreground">{persona.Summary.company}</p>
+                        )}
+                      </div>
+
+                      {persona.Summary?.bio && (
+                        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                          {persona.Summary.bio}
+                        </p>
                       )}
-                      {persona.Summary?.company && (
-                        <p className="text-sm text-muted-foreground">{persona.Summary.company}</p>
-                      )}
+
+                      <Button
+                        className="w-full bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)] transition-all group-hover:scale-105 rounded-xl font-semibold"
+                      >
+                        Start Conversation 💬
+                      </Button>
                     </div>
-
-                    {persona.Summary?.bio && (
-                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-                        {persona.Summary.bio}
-                      </p>
-                    )}
-
-                    <Button
-                      variant="outline"
-                      className="w-full group-hover:border-primary group-hover:bg-primary/5 transition-all"
-                    >
-                      Start Conversation
-                    </Button>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
-      </main>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
     </div>
   );
 };

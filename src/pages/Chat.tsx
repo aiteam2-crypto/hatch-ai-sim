@@ -172,15 +172,21 @@ const Chat = () => {
   }
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-background via-background to-muted/10">
+    <div className="min-h-screen flex relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5">
+        <div className="absolute top-20 left-10 w-96 h-96 bg-primary/20 rounded-full blur-[120px] animate-float" />
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-secondary/20 rounded-full blur-[120px] animate-float-slow" />
+      </div>
+
       {/* Sidebar */}
-      <aside className="w-80 border-r border-border/50 backdrop-blur-sm bg-background/80 flex flex-col">
+      <aside className="w-80 border-r border-border/50 backdrop-blur-sm bg-background/80 flex flex-col relative z-10">
         <div className="p-4 border-b border-border/50 flex items-center justify-between">
           <Button
             variant="ghost"
             size="icon"
             onClick={handleBack}
-            className="rounded-full"
+            className="rounded-xl hover:bg-primary/10 transition-all"
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
@@ -188,14 +194,14 @@ const Chat = () => {
             variant="ghost"
             size="icon"
             onClick={handleSignOut}
-            className="rounded-full text-muted-foreground hover:text-destructive"
+            className="rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
           >
             <LogOut className="w-5 h-5" />
           </Button>
         </div>
 
         <div className="p-4 space-y-4">
-          <Button className="w-full justify-start gap-2 bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)]">
+          <Button className="w-full justify-start gap-2 bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)] rounded-xl font-semibold">
             <Plus className="w-4 h-4" />
             New Chat
           </Button>
@@ -204,7 +210,7 @@ const Chat = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search chats..."
-              className="pl-10"
+              className="pl-10 rounded-xl"
             />
           </div>
         </div>
@@ -214,7 +220,7 @@ const Chat = () => {
             {mockChats.map((chat) => (
               <Card
                 key={chat.id}
-                className="p-3 cursor-pointer hover:bg-muted/50 transition-colors"
+                className="p-3 cursor-pointer hover:bg-primary/5 transition-colors border border-transparent hover:border-primary/30 rounded-xl"
               >
                 <h4 className="font-medium text-sm mb-1">{chat.name}</h4>
                 <p className="text-xs text-muted-foreground truncate">{chat.preview}</p>
@@ -229,12 +235,12 @@ const Chat = () => {
       </aside>
 
       {/* Main Chat Area */}
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col relative z-10">
         {/* Chat Header */}
         <header className="p-6 border-b border-border/50 backdrop-blur-sm bg-background/80">
-          <h1 className="text-2xl font-bold gradient-text">Ask Me Anything</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            You are now chatting with {persona.Persona_Name}
+          <h1 className="text-3xl font-bold gradient-text">Ask Me Anything 💬</h1>
+          <p className="text-sm text-muted-foreground mt-2">
+            Chatting with <span className="text-primary font-semibold">{persona.Persona_Name}</span> ⚡
           </p>
         </header>
 
@@ -247,10 +253,10 @@ const Chat = () => {
                 className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} animate-slide-up`}
               >
                 <Card
-                  className={`max-w-[80%] p-4 ${
+                  className={`max-w-[80%] p-5 ${
                     message.role === "user"
-                      ? "bg-gradient-to-r from-primary to-secondary text-primary-foreground"
-                      : "glass-card"
+                      ? "bg-gradient-to-r from-primary to-secondary text-primary-foreground shadow-lg rounded-2xl rounded-tr-sm"
+                      : "glass-card-glow rounded-2xl rounded-tl-sm"
                   }`}
                 >
                   <p className="leading-relaxed">{message.content}</p>
@@ -264,22 +270,22 @@ const Chat = () => {
         <div className="p-6 border-t border-border/50 backdrop-blur-sm bg-background/80">
           <div className="max-w-3xl mx-auto flex gap-4">
             <Input
-              placeholder="Type your message..."
+              placeholder="Type your message... 💭"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleSend()}
-              className="flex-1 h-12"
+              className="flex-1 h-14 text-base rounded-2xl border-2 focus:border-primary transition-all"
             />
             <Button
               onClick={handleSend}
               size="icon"
               disabled={isSending || !input.trim()}
-              className="h-12 w-12 rounded-full bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)] disabled:opacity-50"
+              className="h-14 w-14 rounded-2xl bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)] disabled:opacity-50 hover:scale-105 transition-all"
             >
               {isSending ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-6 h-6 animate-spin" />
               ) : (
-                <Send className="w-5 h-5" />
+                <Send className="w-6 h-6" />
               )}
             </Button>
           </div>

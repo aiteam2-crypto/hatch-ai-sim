@@ -101,23 +101,32 @@ const SignIn = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-background via-background to-muted/20">
-      <div className="absolute top-6 right-6">
+    <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10">
+        <div className="absolute top-20 left-10 w-96 h-96 bg-primary/30 rounded-full blur-[120px] animate-float" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/30 rounded-full blur-[120px] animate-float-slow" />
+      </div>
+
+      <div className="absolute top-6 right-6 z-20">
         <ThemeToggle />
       </div>
       
-      <Card className="w-full max-w-md p-8 glass-card animate-slide-up">
+      <Card className="w-full max-w-md p-10 glass-card-glow animate-slide-up relative z-10">
         <div className="flex flex-col items-center space-y-8">
-          <Logo />
+          <div className="text-center space-y-2">
+            <Logo />
+            <p className="text-sm text-muted-foreground">Welcome to the future of AI personas ⚡</p>
+          </div>
           
           <div className="w-full space-y-6">
-            <h2 className="text-2xl font-semibold text-center">Sign in to continue</h2>
+            <h2 className="text-3xl font-bold text-center gradient-text">Sign in to continue</h2>
             
             <div className="space-y-4">
               <Button
                 onClick={handleGoogleSignIn}
-                variant="outline"
-                className="w-full py-6 text-base hover:border-primary hover:bg-primary/5 transition-all duration-300"
+                size="lg"
+                className="w-full py-7 text-base bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)] transition-all duration-300 hover:scale-105 rounded-2xl"
               >
                 <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
                   <path
@@ -143,21 +152,12 @@ const SignIn = () => {
               <Button
                 onClick={() => navigate("/")}
                 variant="ghost"
-                className="w-full py-6 text-base"
+                size="lg"
+                className="w-full py-6 text-base hover:bg-muted/50 rounded-2xl"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Homepage
               </Button>
-
-              <div className="pt-4 border-t">
-                <Button
-                  onClick={handleTestInsert}
-                  variant="secondary"
-                  className="w-full py-6 text-base"
-                >
-                  🧪 Test Database Insert
-                </Button>
-              </div>
             </div>
           </div>
         </div>

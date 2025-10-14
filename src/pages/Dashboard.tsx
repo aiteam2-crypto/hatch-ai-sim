@@ -235,49 +235,57 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/10">
-      <Header showBackButton={false} />
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5">
+        <div className="absolute top-20 left-10 w-96 h-96 bg-primary/20 rounded-full blur-[120px] animate-float" />
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-secondary/20 rounded-full blur-[120px] animate-float-slow" />
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-accent/20 rounded-full blur-[120px] animate-float" />
+      </div>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-6 py-12">
-        <div className="max-w-4xl mx-auto space-y-12 animate-fade-in">
-          <div className="flex items-center justify-between">
-            <h1 className="text-5xl font-bold gradient-text">
-              Create AI Personas
-            </h1>
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/personas")}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              My Personas
-            </Button>
-          </div>
+      <div className="relative z-10">
+        <Header showBackButton={false} />
+
+        {/* Main Content */}
+        <main className="container mx-auto px-6 py-12">
+          <div className="max-w-4xl mx-auto space-y-12 animate-fade-in">
+            <div className="flex items-center justify-between">
+              <h1 className="text-5xl md:text-6xl font-bold gradient-text">
+                Create AI Personas ✨
+              </h1>
+              <Button
+                variant="outline"
+                onClick={() => navigate("/personas")}
+                className="hover:border-primary hover:bg-primary/5 transition-all duration-300 rounded-xl"
+              >
+                My Personas
+              </Button>
+            </div>
 
           {/* Input Section */}
-          <Card className="p-8 glass-card shadow-[var(--shadow-elevated)]">
+          <Card className="p-10 glass-card-glow">
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">
-                  Name of the person
+              <div className="space-y-3">
+                <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  👤 Name of the person
                 </label>
                 <Input
                   placeholder="e.g., John Smith"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="h-12"
+                  className="h-14 text-base rounded-xl border-2 focus:border-primary transition-all"
                 />
               </div>
               
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">
-                  LinkedIn URL
+              <div className="space-y-3">
+                <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  🔗 LinkedIn URL
                 </label>
                 <Input
                   placeholder="https://linkedin.com/in/..."
                   value={linkedinUrl}
                   onChange={(e) => setLinkedinUrl(e.target.value)}
-                  className="h-12"
+                  className="h-14 text-base rounded-xl border-2 focus:border-primary transition-all"
                 />
               </div>
             </div>
@@ -285,34 +293,36 @@ const Dashboard = () => {
             <Button
               onClick={handleGenerate}
               disabled={isGenerating}
-              className="w-full mt-6 h-12 text-base bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)] transition-all duration-300 disabled:opacity-50"
+              size="lg"
+              className="w-full mt-8 h-16 text-lg bg-gradient-to-r from-primary via-secondary to-accent hover:shadow-[var(--shadow-neon)] transition-all duration-500 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 rounded-2xl font-semibold"
             >
               {isGenerating ? (
                 <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Generating AI Persona...
+                  <Loader2 className="w-6 h-6 mr-2 animate-spin" />
+                  Generating AI Persona... ⚡
                 </>
               ) : (
-                "Generate Persona"
+                "Generate Persona ✨"
               )}
             </Button>
           </Card>
 
           {/* Quick Start Button - Shows immediately after persona creation */}
           {createdPersonaId && !personaData && (
-            <Card className="p-6 glass-card animate-slide-up">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-semibold mb-2">Persona Created!</h3>
+            <Card className="p-8 glass-card-glow animate-slide-up border-2 border-primary/50">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="text-center md:text-left">
+                  <h3 className="text-2xl font-bold mb-2 gradient-text">Persona Created! 🎉</h3>
                   <p className="text-muted-foreground">
-                    Your AI persona is being generated. You can start chatting now while we finish processing the details.
+                    Your AI persona is being generated. Start chatting now while we finish processing! 💬
                   </p>
                 </div>
                 <Button
                   onClick={() => navigate(`/chat/${createdPersonaId}`)}
-                  className="h-12 px-6 bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)]"
+                  size="lg"
+                  className="h-14 px-8 bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)] rounded-2xl font-semibold hover:scale-105 transition-all"
                 >
-                  Start Chatting
+                  Start Chatting ⚡
                 </Button>
               </div>
             </Card>
@@ -320,9 +330,10 @@ const Dashboard = () => {
 
           {/* Results Section */}
           {personaData && (
-            <div className="space-y-6 animate-slide-up">
+            <div className="space-y-8 animate-slide-up">
+              <h2 className="text-3xl font-bold gradient-text text-center">Your AI Persona is Ready! 🎊</h2>
               <div className="grid md:grid-cols-3 gap-6">
-                <Card className="p-6 glass-card hover:shadow-[var(--glow-primary)] transition-all duration-300">
+                <Card className="p-6 glass-card-glow hover:scale-105 transition-all duration-300 border-2 border-primary/30 hover:border-primary/60">
                   <div className="space-y-4">
                     <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                       <User className="w-6 h-6 text-primary" />
@@ -337,7 +348,7 @@ const Dashboard = () => {
                   </div>
                 </Card>
 
-                <Card className="p-6 glass-card hover:shadow-[var(--glow-secondary)] transition-all duration-300">
+                <Card className="p-6 glass-card-glow hover:scale-105 transition-all duration-300 border-2 border-secondary/30 hover:border-secondary/60">
                   <div className="space-y-4">
                     <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center">
                       <Lightbulb className="w-6 h-6 text-secondary" />
@@ -351,7 +362,7 @@ const Dashboard = () => {
                   </div>
                 </Card>
 
-                <Card className="p-6 glass-card hover:shadow-[var(--glow-primary)] transition-all duration-300">
+                <Card className="p-6 glass-card-glow hover:scale-105 transition-all duration-300 border-2 border-accent/30 hover:border-accent/60">
                   <div className="space-y-4">
                     <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                       <MessageCircleQuestion className="w-6 h-6 text-primary" />
@@ -397,6 +408,7 @@ const Dashboard = () => {
           )}
         </div>
       </main>
+      </div>
     </div>
   );
 };
