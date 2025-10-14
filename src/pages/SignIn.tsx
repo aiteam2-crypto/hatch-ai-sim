@@ -33,10 +33,42 @@ const SignIn = () => {
 
   const handleTestInsert = async () => {
     try {
+      // Step 1: Test Supabase connection
+      const { data: connectionTest, error: connectionError } = await supabase
+        .from('user')
+        .select('count')
+        .limit(0);
+
+      if (connectionError) {
+        if (connectionError.message.includes('does not exist')) {
+          toast({
+            title: "Table 'user' Not Found",
+            description: "You need to create the 'user' table in Supabase first. Check the Cloud tab to create it.",
+            variant: "destructive",
+          });
+          console.error("Table structure needed:", {
+            table_name: "user",
+            columns: [
+              "User_id (uuid, primary key, default: gen_random_uuid())",
+              "User_name (text)",
+              "User_email (text, unique)",
+              "Created_at (timestamp with time zone, default: now())"
+            ]
+          });
+          return;
+        }
+        toast({
+          title: "Connection Error",
+          description: connectionError.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Step 2: Try inserting mock data
       const mockData = {
         User_name: "John Doe",
         User_email: `test.user.${Date.now()}@example.com`,
-        Created_at: new Date().toISOString(),
       };
 
       const { data, error } = await supabase
@@ -50,6 +82,7 @@ const SignIn = () => {
           description: error.message,
           variant: "destructive",
         });
+        console.error("Insert error:", error);
       } else {
         toast({
           title: "Test Insert Success! ✅",
@@ -63,6 +96,7 @@ const SignIn = () => {
         description: err instanceof Error ? err.message : "Unknown error",
         variant: "destructive",
       });
+      console.error("Unexpected error:", err);
     }
   };
 
