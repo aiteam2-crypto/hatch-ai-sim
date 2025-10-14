@@ -43,21 +43,39 @@ const Dashboard = () => {
       attempts++;
       
       console.log(`Polling attempt ${attempts} - checking if n8n workflow completed...`);
+      console.log(`Querying for Persona_Id: ${personaId}`);
       
+      // Force fresh data by adding a timestamp parameter to bypass any caching
+      const cacheBuster = Date.now();
       const { data, error } = await supabase
         .from('Persona')
-        .select('Summary')
+        .select('Summary, Persona_Id, Persona_Name, created_at')
         .eq('Persona_Id', personaId)
-        .single();
+        .maybeSingle();
+      
+      // Log the full response for debugging
+      console.log(`Raw response (attempt ${attempts}, cacheBuster: ${cacheBuster}):`, {
+        data,
+        error,
+        hasData: !!data,
+        hasSummary: !!data?.Summary,
+        summaryType: data?.Summary ? typeof data.Summary : 'undefined',
+        summaryKeys: data?.Summary && typeof data.Summary === 'object' ? Object.keys(data.Summary) : []
+      });
       
       if (error) {
-        console.error('Error polling for summary:', error);
+        console.error('❌ Error polling for summary:', error);
+        continue;
+      }
+      
+      if (!data) {
+        console.error('❌ No persona found with ID:', personaId);
         continue;
       }
       
       // Verify Summary exists, is not null, and is not an empty string
       if (data?.Summary && typeof data.Summary === 'object' && Object.keys(data.Summary).length > 0) {
-        console.log('✅ Summary successfully populated by n8n workflow');
+        console.log('✅ Summary successfully populated by n8n workflow:', data.Summary);
         return true;
       }
       
