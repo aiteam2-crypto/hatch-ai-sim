@@ -6,7 +6,6 @@ import { Header } from "@/components/Header";
 import { useNavigate } from "react-router-dom";
 import { User, Lightbulb, MessageCircleQuestion, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { createClient } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -37,60 +36,31 @@ const Dashboard = () => {
   const [createdPersonaId, setCreatedPersonaId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'summary' | 'interests' | 'questions'>('summary');
 
-  const pollForSummary = async (personaId: string): Promise<boolean> => {
+  const pollForScrapedData = async (personaId: string, maxAttempts = 40): Promise<boolean> => {
     let attempts = 0;
-    while (true) {
+    
+    while (attempts < maxAttempts) {
       await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds between checks
       attempts++;
       
-      console.log(`Polling attempt ${attempts} - checking if n8n workflow completed...`);
+      console.log(`Polling attempt ${attempts} - checking if n8n scraped data...`);
       console.log(`Querying for Persona_Id: ${personaId}`);
       
-      // Create a fresh Supabase client for each poll to bypass caching
-      const freshSupabase = createClient(
-        "https://utynvssdbjeiujjvsrmj.supabase.co",
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0eW52c3NkYmplaXVqanZzcm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwMzM0NjAsImV4cCI6MjA3NTYwOTQ2MH0.1UdchHU1Bn9GLwJEL6A7yDwVq2HyQy47dzbxhmi-LV0",
-        {
-          auth: {
-            persistSession: false,
-          },
-          global: {
-            headers: {
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache',
-            },
-          },
-        }
-      );
-      
-      // Set the auth token from the current session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.access_token) {
-        freshSupabase.auth.setSession({
-          access_token: session.access_token,
-          refresh_token: session.refresh_token!,
-        });
-      }
-      
-      const cacheBuster = Date.now();
-      const { data, error } = await freshSupabase
+      const { data, error } = await supabase
         .from('Persona')
-        .select('Summary, Persona_Id, Persona_Name, created_at')
+        .select('LinkedIn_data, Articles, Persona_Id')
         .eq('Persona_Id', personaId)
         .maybeSingle();
       
-      // Log the full response for debugging
-      console.log(`Raw response (attempt ${attempts}, cacheBuster: ${cacheBuster}):`, {
-        data,
+      console.log(`Scraped data check (attempt ${attempts}):`, { 
+        data, 
         error,
-        hasData: !!data,
-        hasSummary: !!data?.Summary,
-        summaryType: data?.Summary ? typeof data.Summary : 'undefined',
-        summaryKeys: data?.Summary && typeof data.Summary === 'object' ? Object.keys(data.Summary) : []
+        hasLinkedInData: !!data?.LinkedIn_data,
+        hasArticles: !!data?.Articles
       });
       
       if (error) {
-        console.error('❌ Error polling for summary:', error);
+        console.error('❌ Error polling for persona:', error);
         continue;
       }
       
@@ -99,14 +69,23 @@ const Dashboard = () => {
         continue;
       }
       
-      // Verify Summary exists, is not null, and is not an empty string
-      if (data?.Summary && typeof data.Summary === 'object' && Object.keys(data.Summary).length > 0) {
-        console.log('✅ Summary successfully populated by n8n workflow:', data.Summary);
+      // Check if either LinkedIn_data or Articles are populated (not null and not empty)
+      const hasLinkedInData = data.LinkedIn_data && 
+        typeof data.LinkedIn_data === 'object' && 
+        Object.keys(data.LinkedIn_data).length > 0;
+      const hasArticles = data.Articles && 
+        typeof data.Articles === 'object' && 
+        Object.keys(data.Articles).length > 0;
+      
+      if (hasLinkedInData || hasArticles) {
+        console.log('✅ Scraped data populated! n8n workflow completed successfully.');
         return true;
       }
       
-      console.log('⏳ Summary still empty - n8n workflow still processing...');
+      console.log('⏳ Scraped data still empty - n8n workflow still processing...');
     }
+    
+    throw new Error('Timeout waiting for data scraping. The workflow may still be processing.');
   };
 
   const createChatbotConversation = async (personaId: string, personaName: string) => {
@@ -233,23 +212,22 @@ const Dashboard = () => {
       setCreatedPersonaId(insertedPersonaId);
       console.log('Persona inserted with ID:', insertedPersonaId);
 
-      // Step 2: Wait for automated backend enrichment
-      // Note: An automatic Supabase trigger will invoke the n8n workflow
+      // Step 2: Wait for n8n to scrape LinkedIn and Articles data
       toast({
-        title: "Backend processing...",
-        description: "Automated workflow is enriching your persona profile",
+        title: "Scraping data...",
+        description: "n8n workflow is gathering information from LinkedIn and articles",
       });
 
-      console.log('Waiting for automated backend process to populate Summary...');
+      console.log('Waiting for n8n to scrape LinkedIn_data and Articles...');
       
-      await pollForSummary(insertedPersonaId);
+      await pollForScrapedData(insertedPersonaId);
 
-      console.log('Backend enrichment completed successfully');
+      console.log('Data scraping completed successfully');
 
       // Step 3: Generate AI persona from scraped data
       toast({
-        title: "Generating profile...",
-        description: "AI is analyzing the persona details",
+        title: "Generating AI persona...",
+        description: "Creating persona summary from scraped data",
       });
 
       const { data, error } = await supabase.functions.invoke('generate-persona', {
