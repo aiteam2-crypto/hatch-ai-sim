@@ -9,51 +9,22 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-    // 1. Handle the OPTIONS Preflight Request
-    if (req.method === 'OPTIONS') {
-        // Return a simple 200 OK response with the CORS headers
-        return new Response('ok', { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+  
+  console.log(`Call to 'generate-persona' function called`);
+
+  try {
+    const { name, linkedInUrl, scrapedData } = await req.json();
+    console.log(`Request received: { name, linkedInUrl }`, { name, linkedInUrl });
+
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      console.error('LOVABLE_API_KEY not found in environment');
+      throw new Error('LOVABLE_API_KEY not configured');
     }
-    
-    // The rest of the POST logic starts here
-    console.log(`Call to 'generate-persona' function called`);
-
-    try {
-        const { name, linkedInUrl, scrapedData } = await req.json();
-        console.log(`Request received: { name, linkedInUrl }`, { name, linkedInUrl });
-
-        // ... (Your Lovable API key check logic here) ...
-        const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-        if (!LOVABLE_API_KEY) {
-            console.error('LOVABLE_API_KEY not found in environment');
-            throw new Error('LOVABLE_API_KEY not configured');
-        }
-        console.log('LOVABLE_API_KEY is present');
-
-        // ... (rest of your persona generation logic) ...
-        
-        const responseData = { /* The actual persona data or success message */ };
-        
-        // 2. Return the final POST response with CORS headers
-        return new Response(JSON.stringify(responseData), {
-            status: 200,
-            headers: {
-                ...corsHeaders, // Include CORS headers here
-                'Content-Type': 'application/json',
-            },
-        });
-
-    } catch (error) {
-        // 3. Return the error response with CORS headers
-        return new Response(JSON.stringify({ error: error.message }), {
-            status: 400,
-            headers: {
-                ...corsHeaders, // Include CORS headers here
-                'Content-Type': 'application/json',
-            },
-        });
-    }
-});
+    console.log('LOVABLE_API_KEY is present');
 
     const systemPrompt = `# 🧠 CONTEXT
 You are generating a fully structured and realistic **AI persona** based on scraped public data.
@@ -107,7 +78,7 @@ You MUST output valid JSON with this exact structure:
 
     const userPrompt = `Generate an AI persona for:
 Name: ${name}
-LinkedIn: ${linkedinUrl}
+LinkedIn: ${linkedInUrl}
 
 Scraped Data:
 ${scrapedData || 'Limited data available - use the name and LinkedIn to infer a professional persona based on typical profiles.'}`;
@@ -150,10 +121,8 @@ ${scrapedData || 'Limited data available - use the name and LinkedIn to infer a 
     const data = await response.json();
     const content = data.choices[0].message.content;
 
-    // Parse JSON response
     let personaData;
     try {
-      // Remove markdown code blocks if present
       const cleanedContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       personaData = JSON.parse(cleanedContent);
     } catch (parseError) {

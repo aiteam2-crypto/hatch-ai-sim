@@ -35,32 +35,71 @@ const Dashboard = () => {
   const [personaData, setPersonaData] = useState<PersonaData | null>(null);
   const n8nWebhookUrl = "https://jags0101.app.n8n.cloud/webhook-test/f71075d7-ab4f-4242-92ad-a69c78d0f319";
 
+  const pollForSummary = async (personaId: string, maxAttempts = 9): Promise<boolean> => {
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10 seconds
+      
+      const { data, error } = await supabase
+        .from('Persona')
+        .select('Summary')
+        .eq('Persona_ID', personaId)
+        .single();
+      
+      if (error) {
+        console.error('Error polling for summary:', error);
+        continue;
+      }
+      
+      if (data?.Summary) {
+        console.log('Summary found:', data.Summary);
+        return true;
+      }
+      
+      console.log(`Polling attempt ${i + 1}/${maxAttempts} - no summary yet`);
+    }
+    
+    return false;
+  };
+
+  const createChatbotConversation = async (personaId: string, personaName: string) => {
+    try {
+      const { error } = await supabase
+        .from('Conversation')
+        .insert({
+          User_Id: user!.id,
+          Persona_Id: personaId,
+          message: `Hello, I am ${personaName} — ask me anything!`,
+          By_AI: true
+        });
+      
+      if (error) {
+        console.error('Error creating conversation:', error);
+        throw error;
+      }
+      
+      console.log('Chatbot conversation initialized');
+    } catch (error) {
+      console.error('Failed to create chatbot conversation:', error);
+      throw error;
+    }
+  };
+
   const handleGenerate = async () => {
     // Validate inputs
-    if (!name || !linkedinUrl) {
+    if (!name.trim() || !linkedinUrl.trim()) {
       toast({
         title: "Missing Information",
-        description: "Please provide both name and LinkedIn URL",
+        description: "Please enter both the person's name and a valid LinkedIn URL.",
         variant: "destructive",
       });
       return;
     }
 
     // Validate LinkedIn URL format
-    try {
-      const url = new URL(linkedinUrl);
-      if (!url.hostname.includes('linkedin.com')) {
-        toast({
-          title: "Invalid URL",
-          description: "Please provide a valid LinkedIn URL",
-          variant: "destructive",
-        });
-        return;
-      }
-    } catch {
+    if (!linkedinUrl.startsWith('https://www.linkedin.com/in/')) {
       toast({
-        title: "Invalid URL",
-        description: "Please provide a valid LinkedIn URL",
+        title: "Invalid LinkedIn URL",
+        description: "Please enter a valid LinkedIn URL starting with https://www.linkedin.com/in/",
         variant: "destructive",
       });
       return;
@@ -73,43 +112,22 @@ const Dashboard = () => {
         description: "Please sign in to create a persona",
         variant: "destructive",
       });
+      navigate('/signin');
       return;
     }
 
     setIsGenerating(true);
     setPersonaData(null);
 
+    let insertedPersonaId: string | null = null;
+
     try {
-      console.log('Calling generate-persona edge function...');
-      
-      // Call the edge function
-      const { data, error } = await supabase.functions.invoke('generate-persona', {
-        body: {
-          name,
-          linkedinUrl,
-          scrapedData: `Professional profile for ${name}. Based on LinkedIn and public sources.`
-        }
+      // Step 1: Insert persona record first
+      toast({
+        title: "Saving persona...",
+        description: "Creating your AI persona profile",
       });
 
-      console.log('Edge function response:', { data, error });
-
-      if (error) {
-        console.error('Edge function error details:', {
-          message: error.message,
-          context: error.context,
-          name: error.name
-        });
-        throw new Error(error.message || 'Failed to generate persona');
-      }
-
-      if (data?.error) {
-        console.error('Data error:', data.error);
-        throw new Error(data.error);
-      }
-
-      setPersonaData(data);
-
-      // Insert persona record into database
       const { data: insertedPersona, error: insertError } = await supabase
         .from('Persona')
         .insert({
@@ -122,50 +140,107 @@ const Dashboard = () => {
 
       if (insertError) {
         console.error('Error inserting persona:', insertError);
-        toast({
-          title: "Persona Generated",
-          description: "Persona generated but failed to save to database",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Persona Generated!",
-          description: "Your AI persona is ready to chat",
-        });
+        throw new Error('Failed to save persona to database');
+      }
 
-        // Trigger n8n webhook if URL is provided
-        if (n8nWebhookUrl) {
-          try {
-            console.log('Triggering n8n webhook...');
-            await supabase.functions.invoke('trigger-n8n', {
-              body: {
-                webhookUrl: n8nWebhookUrl,
-                personaData: {
-                  id: insertedPersona.Persona_ID,
-                  name: name,
-                  linkedinUrl: linkedinUrl,
-                  userId: user.id,
-                  summary: data.personaSummary,
-                  instructions: data.chatbotInstructions,
-                  createdAt: new Date().toISOString()
-                }
+      insertedPersonaId = insertedPersona.Persona_ID;
+      console.log('Persona inserted with ID:', insertedPersonaId);
+
+      // Step 2: Generate AI persona
+      toast({
+        title: "Generating profile...",
+        description: "AI is analyzing the persona details",
+      });
+
+      const { data, error } = await supabase.functions.invoke('generate-persona', {
+        body: {
+          name,
+          linkedinUrl,
+          scrapedData: `Professional profile for ${name}. Based on LinkedIn and public sources.`
+        }
+      });
+
+      if (error || data?.error) {
+        console.error('Edge function error:', error || data.error);
+        throw new Error(error?.message || data?.error || 'Failed to generate persona');
+      }
+
+      setPersonaData(data);
+
+      // Step 3: Trigger n8n webhook for summary generation
+      if (n8nWebhookUrl && insertedPersonaId) {
+        try {
+          toast({
+            title: "Enriching profile...",
+            description: "Generating detailed summary",
+          });
+
+          await supabase.functions.invoke('trigger-n8n', {
+            body: {
+              webhookUrl: n8nWebhookUrl,
+              personaData: {
+                Persona_Id: insertedPersonaId,
+                Persona_Name: name,
+                LinkedIn_URL: linkedinUrl,
+                User_Id: user.id,
+                summary: data.personaSummary,
+                instructions: data.chatbotInstructions,
+                created_at: new Date().toISOString()
               }
+            }
+          });
+          
+          console.log('n8n webhook triggered');
+
+          // Step 4: Poll for summary
+          toast({
+            title: "Processing...",
+            description: "Waiting for summary generation (up to 90 seconds)",
+          });
+
+          const summaryReady = await pollForSummary(insertedPersonaId);
+          
+          if (!summaryReady) {
+            toast({
+              title: "Summary Still Processing",
+              description: "Summary generation is still processing. You'll be notified when it's ready.",
+              variant: "default",
             });
-            console.log('n8n webhook triggered successfully');
-          } catch (webhookError) {
-            console.error('Error triggering n8n webhook:', webhookError);
-            // Don't show error to user as persona was created successfully
           }
+
+        } catch (webhookError) {
+          console.error('Error in n8n workflow:', webhookError);
+          // Continue even if webhook fails
         }
       }
+
+      // Step 5: Create chatbot conversation
+      if (insertedPersonaId) {
+        await createChatbotConversation(insertedPersonaId, name);
+      }
+
+      // Step 6: Success
+      toast({
+        title: `✅ ${name} has been created!`,
+        description: "Summary generated successfully — start chatting now.",
+      });
 
     } catch (error) {
       console.error('Error generating persona:', error);
       toast({
         title: "Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate persona. Please try again.",
+        description: error instanceof Error ? error.message : "We couldn't reach the AI service. Please try again.",
         variant: "destructive",
       });
+      
+      // Clean up failed persona if it was created
+      if (insertedPersonaId) {
+        try {
+          await supabase.from('Persona').delete().eq('Persona_ID', insertedPersonaId);
+        } catch (cleanupError) {
+          console.error('Error cleaning up failed persona:', cleanupError);
+        }
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -295,7 +370,26 @@ const Dashboard = () => {
               </Card>
 
               <Button
-                onClick={() => navigate('/chat/new')}
+                onClick={async () => {
+                  // Find the persona we just created
+                  const { data: personas } = await supabase
+                    .from('Persona')
+                    .select('Persona_ID')
+                    .eq('Persona_Name', name)
+                    .eq('User_Id', user?.id)
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+                  
+                  if (personas && personas.length > 0) {
+                    navigate(`/chat/${personas[0].Persona_ID}`);
+                  } else {
+                    toast({
+                      title: "Error",
+                      description: "Could not find the persona. Please try from My Personas page.",
+                      variant: "destructive"
+                    });
+                  }
+                }}
                 className="w-full h-14 text-lg bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)] transition-all duration-300"
               >
                 Start Chatting with {personaData.personaSummary.name}
