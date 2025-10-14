@@ -63,24 +63,46 @@ const Dashboard = () => {
         continue;
       }
       
-      // CRITICAL: Detailed data inspection
-      console.log('📊 Raw data inspection:');
-      console.log('  LinkedIn_data type:', typeof data.LinkedIn_data);
-      console.log('  LinkedIn_data value:', data.LinkedIn_data);
-      console.log('  LinkedIn_data is null:', data.LinkedIn_data === null);
-      console.log('  LinkedIn_data keys:', data.LinkedIn_data ? Object.keys(data.LinkedIn_data) : 'N/A');
-      console.log('  Articles type:', typeof data.Articles);
-      console.log('  Articles value:', data.Articles);
-      console.log('  Articles is null:', data.Articles === null);
-      console.log('  Articles keys:', data.Articles ? Object.keys(data.Articles) : 'N/A');
+      // CRITICAL: Defensive parsing - handle JSON-encoded strings from backend
+      let linkedInData = data.LinkedIn_data;
+      let articlesData = data.Articles;
+      
+      // Parse if backend sent stringified JSON instead of native objects
+      try {
+        if (typeof linkedInData === 'string') {
+          console.log('⚠️ LinkedIn_data is a string, parsing...');
+          linkedInData = JSON.parse(linkedInData);
+        }
+      } catch (e) {
+        console.error('❌ Failed to parse LinkedIn_data:', e);
+        linkedInData = null;
+      }
+      
+      try {
+        if (typeof articlesData === 'string') {
+          console.log('⚠️ Articles is a string, parsing...');
+          articlesData = JSON.parse(articlesData);
+        }
+      } catch (e) {
+        console.error('❌ Failed to parse Articles:', e);
+        articlesData = null;
+      }
+      
+      console.log('📊 Parsed data inspection:');
+      console.log('  LinkedIn_data type:', typeof linkedInData);
+      console.log('  LinkedIn_data is object:', linkedInData && typeof linkedInData === 'object');
+      console.log('  LinkedIn_data keys count:', linkedInData ? Object.keys(linkedInData).length : 0);
+      console.log('  Articles type:', typeof articlesData);
+      console.log('  Articles is object:', articlesData && typeof articlesData === 'object');
+      console.log('  Articles keys count:', articlesData ? Object.keys(articlesData).length : 0);
       
       // CRITICAL: Check that BOTH LinkedIn_data AND Articles are populated (not null and not empty)
-      const hasLinkedInData = data.LinkedIn_data && 
-        typeof data.LinkedIn_data === 'object' && 
-        Object.keys(data.LinkedIn_data).length > 0;
-      const hasArticles = data.Articles && 
-        typeof data.Articles === 'object' && 
-        Object.keys(data.Articles).length > 0;
+      const hasLinkedInData = linkedInData && 
+        typeof linkedInData === 'object' && 
+        Object.keys(linkedInData).length > 0;
+      const hasArticles = articlesData && 
+        typeof articlesData === 'object' && 
+        Object.keys(articlesData).length > 0;
       
       console.log('✔️ Validation results:');
       console.log(`  hasLinkedInData: ${hasLinkedInData}`);
