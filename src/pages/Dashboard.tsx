@@ -35,7 +35,6 @@ const Dashboard = () => {
   const [personaData, setPersonaData] = useState<PersonaData | null>(null);
   const [createdPersonaId, setCreatedPersonaId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'summary' | 'interests' | 'questions'>('summary');
-  const n8nWebhookUrl = "https://jags0101.app.n8n.cloud/webhook-test/f71075d7-ab4f-4242-92ad-a69c78d0f319";
 
   const pollForSummary = async (personaId: string, maxAttempts = 9): Promise<boolean> => {
     for (let i = 0; i < maxAttempts; i++) {
@@ -187,46 +186,22 @@ const Dashboard = () => {
       setCreatedPersonaId(insertedPersonaId);
       console.log('Persona inserted with ID:', insertedPersonaId);
 
-      // Step 2: Trigger n8n webhook for data scraping
-      if (n8nWebhookUrl && insertedPersonaId) {
-        try {
-          toast({
-            title: "Enriching profile...",
-            description: "Scraping data from web sources",
-          });
+      // Step 2: Wait for automated backend enrichment
+      // Note: An automatic Supabase trigger will invoke the n8n workflow
+      toast({
+        title: "Backend processing...",
+        description: "Automated workflow is enriching your persona profile",
+      });
 
-          await supabase.functions.invoke('trigger-n8n', {
-            body: {
-              webhookUrl: n8nWebhookUrl,
-              personaData: {
-                Persona_Id: insertedPersonaId,
-                Persona_Name: name,
-                LinkedIn_URL: linkedinUrl,
-                User_Id: user.id,
-                created_at: new Date().toISOString()
-              }
-            }
-          });
-          
-          console.log('n8n webhook triggered');
-
-          // Wait for n8n to populate the Summary field
-          toast({
-            title: "Waiting for enrichment...",
-            description: "n8n is processing LinkedIn data and generating summary",
-          });
-          
-          const summaryReady = await pollForSummary(insertedPersonaId);
-          
-          if (!summaryReady) {
-            throw new Error('Summary generation timed out after 90 seconds');
-          }
-
-        } catch (webhookError) {
-          console.error('Error in n8n workflow:', webhookError);
-          throw webhookError;
-        }
+      console.log('Waiting for automated backend process to populate Summary...');
+      
+      const summaryReady = await pollForSummary(insertedPersonaId);
+      
+      if (!summaryReady) {
+        throw new Error('Backend enrichment timed out after 90 seconds');
       }
+
+      console.log('Backend enrichment completed successfully');
 
       // Step 3: Generate AI persona from scraped data
       toast({
