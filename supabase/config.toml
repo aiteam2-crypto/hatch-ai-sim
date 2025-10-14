@@ -1,0 +1,4 @@
+project_id = "utynvssdbjeiujjvsrmj"
+
+[functions.generate-persona]
+verify_jwt = false
