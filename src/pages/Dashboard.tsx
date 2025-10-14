@@ -42,7 +42,7 @@ const Dashboard = () => {
       const { data, error } = await supabase
         .from('Persona')
         .select('Summary')
-        .eq('Persona_ID', personaId)
+        .eq('Persona_Id', personaId)
         .single();
       
       if (error) {
@@ -66,8 +66,8 @@ const Dashboard = () => {
       const { error } = await supabase
         .from('Conversation')
         .insert({
-          User_Id: user!.id,
-          Persona_Id: personaId,
+          User_id: user!.id,
+          persona_id: personaId,
           message: `Hello, I am ${personaName} — ask me anything!`,
           By_AI: true
         });
@@ -143,7 +143,7 @@ const Dashboard = () => {
         throw new Error('Failed to save persona to database');
       }
 
-      insertedPersonaId = insertedPersona.Persona_ID;
+      insertedPersonaId = insertedPersona.Persona_Id;
       console.log('Persona inserted with ID:', insertedPersonaId);
 
       // Step 2: Generate AI persona
@@ -236,7 +236,7 @@ const Dashboard = () => {
       // Clean up failed persona if it was created
       if (insertedPersonaId) {
         try {
-          await supabase.from('Persona').delete().eq('Persona_ID', insertedPersonaId);
+          await supabase.from('Persona').delete().eq('Persona_Id', insertedPersonaId);
         } catch (cleanupError) {
           console.error('Error cleaning up failed persona:', cleanupError);
         }
@@ -374,14 +374,14 @@ const Dashboard = () => {
                   // Find the persona we just created
                   const { data: personas } = await supabase
                     .from('Persona')
-                    .select('Persona_ID')
+                    .select('Persona_Id')
                     .eq('Persona_Name', name)
                     .eq('User_Id', user?.id)
                     .order('created_at', { ascending: false })
                     .limit(1);
                   
                   if (personas && personas.length > 0) {
-                    navigate(`/chat/${personas[0].Persona_ID}`);
+                    navigate(`/chat/${personas[0].Persona_Id}`);
                   } else {
                     toast({
                       title: "Error",
