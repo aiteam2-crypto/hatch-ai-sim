@@ -3,6 +3,7 @@ import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, LogOut, User, Settings } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,15 +29,15 @@ export const Header = ({ showBackButton = true, showUserMenu = true }: HeaderPro
     }
   };
 
-  const handleSignOut = () => {
-    // When Supabase is enabled, call: await supabase.auth.signOut();
-    navigate("/");
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
   };
 
-  // Mock user data - will be replaced with actual Supabase auth data
   const currentUser = {
-    name: "John Doe",
-    email: "john@example.com"
+    name: user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'User',
+    email: user?.email || ''
   };
 
   return (

@@ -1,20 +1,41 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const SignIn = () => {
   const navigate = useNavigate();
+  const { signInWithGoogle, user, loading } = useAuth();
+  const { toast } = useToast();
 
-  const handleGoogleSignIn = () => {
-    // Placeholder for Google sign-in
-    // Navigate to dashboard after "sign in"
-    navigate("/dashboard");
+  useEffect(() => {
+    if (user && !loading) {
+      navigate("/dashboard");
+    }
+  }, [user, loading, navigate]);
+
+  const handleGoogleSignIn = async () => {
+    const { error } = await signInWithGoogle();
+    if (error) {
+      toast({
+        title: "Authentication Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="absolute top-6 right-6">
+        <ThemeToggle />
+      </div>
+      
       <Card className="w-full max-w-md p-8 glass-card animate-slide-up">
         <div className="flex flex-col items-center space-y-8">
           <Logo />

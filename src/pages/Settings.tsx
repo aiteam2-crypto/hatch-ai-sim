@@ -4,8 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/hooks/useAuth";
 
 const Settings = () => {
+  const { user } = useAuth();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/10">
       <Header />
@@ -29,7 +32,7 @@ const Settings = () => {
                     <Input
                       id="name"
                       placeholder="Enter your name"
-                      defaultValue="John Doe"
+                      defaultValue={user?.user_metadata?.full_name || user?.user_metadata?.name || ''}
                     />
                   </div>
                   <div className="space-y-2">
@@ -38,7 +41,7 @@ const Settings = () => {
                       id="email"
                       type="email"
                       placeholder="your.email@example.com"
-                      defaultValue="john@example.com"
+                      defaultValue={user?.email || ''}
                       disabled
                     />
                     <p className="text-xs text-muted-foreground">
