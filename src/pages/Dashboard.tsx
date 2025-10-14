@@ -36,9 +36,11 @@ const Dashboard = () => {
   const [createdPersonaId, setCreatedPersonaId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'summary' | 'interests' | 'questions'>('summary');
 
-  const pollForSummary = async (personaId: string, maxAttempts = 9): Promise<boolean> => {
-    for (let i = 0; i < maxAttempts; i++) {
+  const pollForSummary = async (personaId: string): Promise<boolean> => {
+    let attempts = 0;
+    while (true) {
       await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10 seconds
+      attempts++;
       
       const { data, error } = await supabase
         .from('Persona')
@@ -56,10 +58,8 @@ const Dashboard = () => {
         return true;
       }
       
-      console.log(`Polling attempt ${i + 1}/${maxAttempts} - no summary yet`);
+      console.log(`Polling attempt ${attempts} - waiting for backend enrichment...`);
     }
-    
-    return false;
   };
 
   const createChatbotConversation = async (personaId: string, personaName: string) => {
@@ -195,11 +195,7 @@ const Dashboard = () => {
 
       console.log('Waiting for automated backend process to populate Summary...');
       
-      const summaryReady = await pollForSummary(insertedPersonaId);
-      
-      if (!summaryReady) {
-        throw new Error('Backend enrichment timed out after 90 seconds');
-      }
+      await pollForSummary(insertedPersonaId);
 
       console.log('Backend enrichment completed successfully');
 
