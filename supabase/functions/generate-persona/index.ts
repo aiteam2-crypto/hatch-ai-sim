@@ -1,31 +1,59 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
+// Define the headers once, with your specific origin.
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://hatch.ai.sim.lovable.app',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Origin': 'https://hatch.ai.sim.lovable.app', // CRITICAL: Only allow your front-end domain
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS', // Allow the necessary methods
 };
 
 serve(async (req) => {
-  console.log('generate-persona function called');
-  
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  try {
-    const { name, linkedinUrl, scrapedData } = await req.json();
-    console.log('Request received:', { name, linkedinUrl });
-    
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-
-    if (!LOVABLE_API_KEY) {
-      console.error('LOVABLE_API_KEY not found in environment');
-      throw new Error('LOVABLE_API_KEY not configured');
+    // 1. Handle the OPTIONS Preflight Request
+    if (req.method === 'OPTIONS') {
+        // Return a simple 200 OK response with the CORS headers
+        return new Response('ok', { headers: corsHeaders });
     }
     
-    console.log('LOVABLE_API_KEY is present');
+    // The rest of the POST logic starts here
+    console.log(`Call to 'generate-persona' function called`);
+
+    try {
+        const { name, linkedInUrl, scrapedData } = await req.json();
+        console.log(`Request received: { name, linkedInUrl }`, { name, linkedInUrl });
+
+        // ... (Your Lovable API key check logic here) ...
+        const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+        if (!LOVABLE_API_KEY) {
+            console.error('LOVABLE_API_KEY not found in environment');
+            throw new Error('LOVABLE_API_KEY not configured');
+        }
+        console.log('LOVABLE_API_KEY is present');
+
+        // ... (rest of your persona generation logic) ...
+        
+        const responseData = { /* The actual persona data or success message */ };
+        
+        // 2. Return the final POST response with CORS headers
+        return new Response(JSON.stringify(responseData), {
+            status: 200,
+            headers: {
+                ...corsHeaders, // Include CORS headers here
+                'Content-Type': 'application/json',
+            },
+        });
+
+    } catch (error) {
+        // 3. Return the error response with CORS headers
+        return new Response(JSON.stringify({ error: error.message }), {
+            status: 400,
+            headers: {
+                ...corsHeaders, // Include CORS headers here
+                'Content-Type': 'application/json',
+            },
+        });
+    }
+});
 
     const systemPrompt = `# 🧠 CONTEXT
 You are generating a fully structured and realistic **AI persona** based on scraped public data.
