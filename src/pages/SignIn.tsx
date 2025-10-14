@@ -68,7 +68,7 @@ const SignIn = () => {
       // Step 2: Try inserting mock data
       const mockData = {
         User_name: "John Doe",
-        User_email: `test.user.${Date.now()}@example.com`,
+        User_Email: `test.user.${Date.now()}@example.com`,
       };
 
       const { data, error } = await supabase
@@ -86,7 +86,7 @@ const SignIn = () => {
       } else {
         toast({
           title: "Test Insert Success! ✅",
-          description: `Inserted: ${mockData.User_name} (${mockData.User_email})`,
+          description: `Inserted: ${mockData.User_name} (${mockData.User_Email})`,
         });
         console.log("Inserted data:", data);
       }

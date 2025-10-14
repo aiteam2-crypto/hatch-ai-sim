@@ -50,10 +50,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { error } = await supabase
         .from('User')
         .upsert({
-          User_email: user.email,
+          User_Id: user.id,
+          User_Email: user.email,
           User_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0],
         }, {
-          onConflict: 'User_email'
+          onConflict: 'User_Email'
         });
 
       if (error) {
