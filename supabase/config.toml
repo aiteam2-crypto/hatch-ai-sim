@@ -1,10 +1,1 @@
 project_id = "utynvssdbjeiujjvsrmj"
-
-[functions.generate-persona]
-verify_jwt = false
-
-[functions.trigger-n8n]
-verify_jwt = false
-
-[functions.insert-persona]
-verify_jwt = false
