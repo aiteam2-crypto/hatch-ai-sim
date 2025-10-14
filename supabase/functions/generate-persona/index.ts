@@ -7,17 +7,24 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log('generate-persona function called');
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { name, linkedinUrl, scrapedData } = await req.json();
+    console.log('Request received:', { name, linkedinUrl });
+    
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
     if (!LOVABLE_API_KEY) {
+      console.error('LOVABLE_API_KEY not found in environment');
       throw new Error('LOVABLE_API_KEY not configured');
     }
+    
+    console.log('LOVABLE_API_KEY is present');
 
     const systemPrompt = `# 🧠 CONTEXT
 You are generating a fully structured and realistic **AI persona** based on scraped public data.
