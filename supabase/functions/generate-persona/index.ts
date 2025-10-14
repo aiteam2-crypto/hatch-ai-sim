@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.75.0';
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -18,26 +19,22 @@ serve(async (req) => {
     const { personaId } = await req.json();
     console.log(`Request received for personaId: ${personaId}`);
 
-    // Fetch persona data from database
+    // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
     
-    const { data: persona, error: fetchError } = await fetch(
-      `${supabaseUrl}/rest/v1/Persona?Persona_Id=eq.${personaId}&select=*`,
-      {
-        headers: {
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`,
-        }
-      }
-    ).then(r => r.json());
+    // Fetch persona data from database using Supabase client
+    const { data: personaData, error: fetchError } = await supabase
+      .from('Persona')
+      .select('*')
+      .eq('Persona_Id', personaId)
+      .single();
 
-    if (fetchError || !persona || persona.length === 0) {
+    if (fetchError || !personaData) {
       console.error('Failed to fetch persona:', fetchError);
       throw new Error('Persona not found');
     }
-
-    const personaData = persona[0];
     const scrapedData = JSON.stringify({
       linkedin: personaData.LinkedIn_data,
       youtube: personaData.Youtube,
@@ -156,24 +153,13 @@ ${scrapedData}`;
     }
 
     // Update persona in database with generated summary
-    const updateResponse = await fetch(
-      `${supabaseUrl}/rest/v1/Persona?Persona_Id=eq.${personaId}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({
-          Summary: generatedPersona
-        })
-      }
-    );
+    const { error: updateError } = await supabase
+      .from('Persona')
+      .update({ Summary: generatedPersona })
+      .eq('Persona_Id', personaId);
 
-    if (!updateResponse.ok) {
-      console.error('Failed to update persona');
+    if (updateError) {
+      console.error('Failed to update persona:', updateError);
       throw new Error('Failed to save persona summary');
     }
 
