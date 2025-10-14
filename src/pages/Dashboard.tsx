@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { User, Lightbulb, MessageCircleQuestion, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 interface PersonaSummary {
   name: string;
@@ -27,16 +28,48 @@ interface PersonaData {
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [name, setName] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [personaData, setPersonaData] = useState<PersonaData | null>(null);
 
   const handleGenerate = async () => {
+    // Validate inputs
     if (!name || !linkedinUrl) {
       toast({
         title: "Missing Information",
         description: "Please provide both name and LinkedIn URL",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate LinkedIn URL format
+    try {
+      const url = new URL(linkedinUrl);
+      if (!url.hostname.includes('linkedin.com')) {
+        toast({
+          title: "Invalid URL",
+          description: "Please provide a valid LinkedIn URL",
+          variant: "destructive",
+        });
+        return;
+      }
+    } catch {
+      toast({
+        title: "Invalid URL",
+        description: "Please provide a valid LinkedIn URL",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if user is authenticated
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to create a persona",
         variant: "destructive",
       });
       return;
@@ -65,11 +98,29 @@ const Dashboard = () => {
       }
 
       setPersonaData(data);
-      
-      toast({
-        title: "Persona Generated!",
-        description: "Your AI persona is ready to chat",
-      });
+
+      // Insert persona record into database
+      const { error: insertError } = await supabase
+        .from('Persona')
+        .insert({
+          Persona_Name: name,
+          LinkedIn_URL: linkedinUrl,
+          User_Id: user.id
+        });
+
+      if (insertError) {
+        console.error('Error inserting persona:', insertError);
+        toast({
+          title: "Persona Generated",
+          description: "Persona generated but failed to save to database",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Persona Generated!",
+          description: "Your AI persona is ready to chat",
+        });
+      }
 
     } catch (error) {
       console.error('Error generating persona:', error);
