@@ -39,8 +39,10 @@ const Dashboard = () => {
   const pollForSummary = async (personaId: string): Promise<boolean> => {
     let attempts = 0;
     while (true) {
-      await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10 seconds
+      await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds between checks
       attempts++;
+      
+      console.log(`Polling attempt ${attempts} - checking if n8n workflow completed...`);
       
       const { data, error } = await supabase
         .from('Persona')
@@ -53,12 +55,13 @@ const Dashboard = () => {
         continue;
       }
       
-      if (data?.Summary) {
-        console.log('Summary found:', data.Summary);
+      // Verify Summary exists, is not null, and is not an empty string
+      if (data?.Summary && typeof data.Summary === 'object' && Object.keys(data.Summary).length > 0) {
+        console.log('✅ Summary successfully populated by n8n workflow');
         return true;
       }
       
-      console.log(`Polling attempt ${attempts} - waiting for backend enrichment...`);
+      console.log('⏳ Summary still empty - n8n workflow still processing...');
     }
   };
 
@@ -235,19 +238,14 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Error generating persona:', error);
       toast({
-        title: "Generation Failed",
-        description: error instanceof Error ? error.message : "We couldn't reach the AI service. Please try again.",
+        title: "Persona Generation Failed",
+        description: error instanceof Error ? error.message : "An error occurred during persona generation. The persona data has been saved and you can retry later.",
         variant: "destructive",
       });
       
-      // Clean up failed persona if it was created
-      if (insertedPersonaId) {
-        try {
-          await supabase.from('Persona').delete().eq('Persona_Id', insertedPersonaId);
-        } catch (cleanupError) {
-          console.error('Error cleaning up failed persona:', cleanupError);
-        }
-      }
+      // Note: We intentionally keep the persona record in the database
+      // for manual review or future retry attempts. The partial data may be valuable.
+      console.log('Persona record preserved in database for future processing');
     } finally {
       setIsGenerating(false);
     }
