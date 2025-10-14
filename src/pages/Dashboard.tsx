@@ -33,6 +33,7 @@ const Dashboard = () => {
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [personaData, setPersonaData] = useState<PersonaData | null>(null);
+  const [createdPersonaId, setCreatedPersonaId] = useState<string | null>(null);
   const n8nWebhookUrl = "https://jags0101.app.n8n.cloud/webhook-test/f71075d7-ab4f-4242-92ad-a69c78d0f319";
 
   const pollForSummary = async (personaId: string, maxAttempts = 9): Promise<boolean> => {
@@ -118,6 +119,7 @@ const Dashboard = () => {
 
     setIsGenerating(true);
     setPersonaData(null);
+    setCreatedPersonaId(null);
 
     let insertedPersonaId: string | null = null;
 
@@ -144,6 +146,7 @@ const Dashboard = () => {
       }
 
       insertedPersonaId = insertedPersona.Persona_Id;
+      setCreatedPersonaId(insertedPersonaId);
       console.log('Persona inserted with ID:', insertedPersonaId);
 
       // Step 2: Generate AI persona
@@ -370,22 +373,13 @@ const Dashboard = () => {
               </Card>
 
               <Button
-                onClick={async () => {
-                  // Find the persona we just created
-                  const { data: personas } = await supabase
-                    .from('Persona')
-                    .select('Persona_Id')
-                    .eq('Persona_Name', name)
-                    .eq('User_Id', user?.id)
-                    .order('created_at', { ascending: false })
-                    .limit(1);
-                  
-                  if (personas && personas.length > 0) {
-                    navigate(`/chat/${personas[0].Persona_Id}`);
+                onClick={() => {
+                  if (createdPersonaId) {
+                    navigate(`/chat/${createdPersonaId}`);
                   } else {
                     toast({
                       title: "Error",
-                      description: "Could not find the persona. Please try from My Personas page.",
+                      description: "Persona ID not found. Please try from My Personas page.",
                       variant: "destructive"
                     });
                   }
