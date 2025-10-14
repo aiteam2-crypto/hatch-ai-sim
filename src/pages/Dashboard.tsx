@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { useNavigate } from "react-router-dom";
 import { User, Lightbulb, MessageCircleQuestion, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { createClient } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -45,9 +46,34 @@ const Dashboard = () => {
       console.log(`Polling attempt ${attempts} - checking if n8n workflow completed...`);
       console.log(`Querying for Persona_Id: ${personaId}`);
       
-      // Force fresh data by adding a timestamp parameter to bypass any caching
+      // Create a fresh Supabase client for each poll to bypass caching
+      const freshSupabase = createClient(
+        "https://utynvssdbjeiujjvsrmj.supabase.co",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0eW52c3NkYmplaXVqanZzcm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwMzM0NjAsImV4cCI6MjA3NTYwOTQ2MH0.1UdchHU1Bn9GLwJEL6A7yDwVq2HyQy47dzbxhmi-LV0",
+        {
+          auth: {
+            persistSession: false,
+          },
+          global: {
+            headers: {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache',
+            },
+          },
+        }
+      );
+      
+      // Set the auth token from the current session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        freshSupabase.auth.setSession({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token!,
+        });
+      }
+      
       const cacheBuster = Date.now();
-      const { data, error } = await supabase
+      const { data, error } = await freshSupabase
         .from('Persona')
         .select('Summary, Persona_Id, Persona_Name, created_at')
         .eq('Persona_Id', personaId)
