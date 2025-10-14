@@ -1,15 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useParams, useNavigate } from "react-router-dom";
-import { Send, Plus, Search, ArrowLeft, LogOut } from "lucide-react";
+import { Send, Plus, Search, ArrowLeft, LogOut, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
+}
+
+interface Persona {
+  Persona_Id: string;
+  Persona_Name: string;
+  Summary: any;
+  User_Id: string;
 }
 
 const mockChats = [
@@ -20,31 +29,145 @@ const mockChats = [
 const Chat = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: "Hello! I'm the AI persona of Sarah Chen. Feel free to ask me anything about product management, AI/ML, or my experience in tech!"
-    }
-  ]);
+  const { toast } = useToast();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [persona, setPersona] = useState<Persona | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [sessionId] = useState(() => crypto.randomUUID());
+  const [isSending, setIsSending] = useState(false);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  useEffect(() => {
+    const fetchPersona = async () => {
+      if (!id) {
+        toast({
+          title: "Error",
+          description: "No persona ID provided",
+          variant: "destructive",
+        });
+        navigate("/personas");
+        return;
+      }
 
-    setMessages([...messages, { role: "user", content: input }]);
-    
-    // Simulate AI response
-    setTimeout(() => {
-      setMessages(prev => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "That's a great question! Based on my experience..."
+      try {
+        const { data, error } = await supabase
+          .from("Persona")
+          .select("*")
+          .eq("Persona_Id", id)
+          .single();
+
+        if (error) throw error;
+
+        if (!data) {
+          toast({
+            title: "Error",
+            description: "Persona not found",
+            variant: "destructive",
+          });
+          navigate("/personas");
+          return;
         }
-      ]);
-    }, 1000);
 
+        if (!data.Summary) {
+          toast({
+            title: "Summary Not Ready",
+            description: "This persona's summary is still being generated. Please try again later.",
+            variant: "destructive",
+          });
+          navigate("/personas");
+          return;
+        }
+
+        setPersona(data);
+        setMessages([
+          {
+            role: "assistant",
+            content: `Hello! I'm ${data.Persona_Name}. Feel free to ask me anything!`
+          }
+        ]);
+      } catch (error) {
+        console.error("Error fetching persona:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load persona",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPersona();
+  }, [id, navigate, toast]);
+
+  const handleSend = async () => {
+    if (!input.trim() || !persona || isSending) return;
+
+    const userMessage = input.trim();
     setInput("");
+    setIsSending(true);
+
+    // Add user message to UI
+    const newUserMessage: Message = { role: "user", content: userMessage };
+    setMessages(prev => [...prev, newUserMessage]);
+
+    try {
+      // Save user message to database
+      const { error: userError } = await supabase
+        .from("Conversation")
+        .insert({
+          Session_ID: sessionId,
+          User_id: persona.User_Id,
+          persona_id: persona.Persona_Id,
+          message: userMessage,
+          By_AI: false,
+        });
+
+      if (userError) throw userError;
+
+      // Call OpenAI via edge function
+      const { data, error } = await supabase.functions.invoke("chat-with-persona", {
+        body: {
+          messages: messages
+            .concat(newUserMessage)
+            .map(m => ({ role: m.role, content: m.content })),
+          personaName: persona.Persona_Name,
+          personaSummary: persona.Summary,
+        },
+      });
+
+      if (error) throw error;
+
+      const aiMessage = data.message;
+      
+      // Add AI message to UI
+      setMessages(prev => [...prev, { role: "assistant", content: aiMessage }]);
+
+      // Save AI message to database
+      const { error: aiError } = await supabase
+        .from("Conversation")
+        .insert({
+          Session_ID: sessionId,
+          User_id: persona.User_Id,
+          persona_id: persona.Persona_Id,
+          message: aiMessage,
+          By_AI: true,
+        });
+
+      if (aiError) throw aiError;
+
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast({
+        title: "Error",
+        description: "Could not fetch a response. Please try again.",
+        variant: "destructive",
+      });
+      // Remove the user message if the request failed
+      setMessages(prev => prev.slice(0, -1));
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleSignOut = () => {
@@ -58,6 +181,21 @@ const Chat = () => {
       navigate("/personas");
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/10">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin" />
+          <p className="text-muted-foreground">Loading persona...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!persona) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-background via-background to-muted/10">
@@ -122,7 +260,7 @@ const Chat = () => {
         <header className="p-6 border-b border-border/50 backdrop-blur-sm bg-background/80">
           <h1 className="text-2xl font-bold gradient-text">Ask Me Anything</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Chatting with Sarah Chen's AI Persona
+            You are now chatting with {persona.Persona_Name}
           </p>
         </header>
 
@@ -161,9 +299,14 @@ const Chat = () => {
             <Button
               onClick={handleSend}
               size="icon"
-              className="h-12 w-12 rounded-full bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)]"
+              disabled={isSending || !input.trim()}
+              className="h-12 w-12 rounded-full bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)] disabled:opacity-50"
             >
-              <Send className="w-5 h-5" />
+              {isSending ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Send className="w-5 h-5" />
+              )}
             </Button>
           </div>
         </div>

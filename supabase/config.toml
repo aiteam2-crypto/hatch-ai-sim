@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.trigger-n8n]
 verify_jwt = false
+
+[functions.chat-with-persona]
+verify_jwt = false
