@@ -13,11 +13,14 @@ serve(async (req) => {
 
   try {
     const { messages, personaId } = await req.json();
+    console.log('📥 Request received - personaId:', personaId, 'messages count:', messages?.length);
     
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     if (!OPENAI_API_KEY) {
+      console.error('❌ CRITICAL: OpenAI API key not configured');
       throw new Error('OpenAI API key not configured');
     }
+    console.log('✅ OpenAI API key found');
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -25,17 +28,27 @@ serve(async (req) => {
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch the full persona data from database
+    console.log('🔍 Fetching persona from database...');
+    // Fetch the full persona data from database (FIXED: using correct column name)
     const { data: persona, error: personaError } = await supabase
       .from('Persona')
-      .select('Name, LinkedIn_data, Articles')
+      .select('Persona_Name, LinkedIn_data, Articles')
       .eq('Persona_Id', personaId)
       .single();
 
     if (personaError || !persona) {
-      console.error('Error fetching persona:', personaError);
-      throw new Error('Persona not found');
+      console.error('❌ Error fetching persona:', personaError);
+      return new Response(
+        JSON.stringify({ error: 'Persona not found', details: personaError?.message }), 
+        {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
+    
+    console.log('✅ Persona fetched:', persona.Persona_Name);
+    console.log('📊 Data validation - LinkedIn:', typeof persona.LinkedIn_data, 'Articles:', typeof persona.Articles);
 
     // Parse the raw data (handle both string and object formats)
     const linkedinData = typeof persona.LinkedIn_data === 'string' 
@@ -82,41 +95,76 @@ From the Persona Dossier, you must infer and construct a complete personality.
 
 * **Rule of Conversation Start:** Your very first message to the user should be a natural, in-character greeting. DO NOT announce that you are a persona. Simply begin the conversation as if you are meeting them.`;
 
-    console.log('Calling OpenAI with enhanced persona emulation prompt for:', persona.Name);
+    console.log('🎭 System prompt built for:', persona.Persona_Name);
+    console.log('📝 Prompt length:', systemPrompt.length, 'characters');
+    console.log('💬 Messages being sent to OpenAI:', JSON.stringify(messages, null, 2));
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...messages
-        ],
-        temperature: 0.7,
-      }),
-    });
+    console.log('🚀 Attempting to call OpenAI API...');
+    
+    let response;
+    try {
+      response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            ...messages
+          ],
+          temperature: 0.7,
+        }),
+      });
+    } catch (fetchError) {
+      console.error('❌ CRITICAL: Network error calling OpenAI:', fetchError);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Failed to connect to AI service',
+          details: fetchError instanceof Error ? fetchError.message : 'Network error'
+        }), 
+        {
+          status: 502, // Bad Gateway
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      console.error('❌ OpenAI API error:', response.status, errorText);
+      return new Response(
+        JSON.stringify({ 
+          error: 'AI service error',
+          details: `OpenAI returned status ${response.status}`,
+          message: errorText
+        }), 
+        {
+          status: 502, // Bad Gateway
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
+    console.log('✅ OpenAI API responded successfully');
     const data = await response.json();
     const aiMessage = data.choices[0].message.content;
+    console.log('💬 AI response length:', aiMessage?.length, 'characters');
 
     return new Response(JSON.stringify({ message: aiMessage }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error in chat-with-persona:', error);
+    console.error('❌ CRITICAL: Unhandled error in chat-with-persona:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     const errorMessage = error instanceof Error ? error.message : 'Failed to generate response';
     return new Response(
-      JSON.stringify({ error: errorMessage }), 
+      JSON.stringify({ 
+        error: 'Internal server error',
+        details: errorMessage 
+      }), 
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
