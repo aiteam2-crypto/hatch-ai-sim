@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -25,6 +26,41 @@ const SignIn = () => {
       toast({
         title: "Authentication Error",
         description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleTestInsert = async () => {
+    try {
+      const mockData = {
+        User_name: "John Doe",
+        User_email: `test.user.${Date.now()}@example.com`,
+        Created_at: new Date().toISOString(),
+      };
+
+      const { data, error } = await supabase
+        .from('user')
+        .insert(mockData)
+        .select();
+
+      if (error) {
+        toast({
+          title: "Test Insert Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Test Insert Success! ✅",
+          description: `Inserted: ${mockData.User_name} (${mockData.User_email})`,
+        });
+        console.log("Inserted data:", data);
+      }
+    } catch (err) {
+      toast({
+        title: "Test Insert Error",
+        description: err instanceof Error ? err.message : "Unknown error",
         variant: "destructive",
       });
     }
@@ -78,6 +114,16 @@ const SignIn = () => {
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Homepage
               </Button>
+
+              <div className="pt-4 border-t">
+                <Button
+                  onClick={handleTestInsert}
+                  variant="secondary"
+                  className="w-full py-6 text-base"
+                >
+                  🧪 Test Database Insert
+                </Button>
+              </div>
             </div>
           </div>
         </div>
