@@ -35,19 +35,19 @@ const SignIn = () => {
     try {
       // Step 1: Test Supabase connection
       const { data: connectionTest, error: connectionError } = await supabase
-        .from('user')
+        .from('User')
         .select('count')
         .limit(0);
 
       if (connectionError) {
         if (connectionError.message.includes('does not exist')) {
           toast({
-            title: "Table 'user' Not Found",
-            description: "You need to create the 'user' table in Supabase first. Check the Cloud tab to create it.",
+            title: "Table 'User' Not Found",
+            description: "You need to create the 'User' table in Supabase first. Check the Cloud tab to create it.",
             variant: "destructive",
           });
           console.error("Table structure needed:", {
-            table_name: "user",
+            table_name: "User",
             columns: [
               "User_id (uuid, primary key, default: gen_random_uuid())",
               "User_name (text)",
@@ -72,7 +72,7 @@ const SignIn = () => {
       };
 
       const { data, error } = await supabase
-        .from('user')
+        .from('User')
         .insert(mockData)
         .select();
 
