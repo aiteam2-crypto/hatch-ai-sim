@@ -35,9 +35,25 @@ serve(async (req) => {
       console.error('Failed to fetch persona:', fetchError);
       throw new Error('Persona not found');
     }
+
+    // Check if both LinkedIn_data and Articles are populated
+    const hasLinkedInData = personaData.LinkedIn_data && 
+      typeof personaData.LinkedIn_data === 'object' && 
+      Object.keys(personaData.LinkedIn_data).length > 0;
+    
+    const hasArticles = personaData.Articles && 
+      typeof personaData.Articles === 'object' && 
+      Object.keys(personaData.Articles).length > 0;
+
+    if (!hasLinkedInData || !hasArticles) {
+      console.error('LinkedIn_data or Articles not yet populated');
+      throw new Error('Required data not yet available. Please wait for scraping to complete.');
+    }
+
+    console.log('Both LinkedIn_data and Articles are populated, proceeding with persona generation');
+
     const scrapedData = JSON.stringify({
       linkedin: personaData.LinkedIn_data,
-      youtube: personaData.Youtube,
       articles: personaData.Articles
     });
 
