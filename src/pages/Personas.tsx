@@ -66,6 +66,17 @@ const Personas = () => {
         .delete()
         .eq('Persona_Id', personaId);
       if (error) throw error;
+
+      // Verify persona removal from DB (defensive check)
+      const { data: remaining, error: checkErr } = await supabase
+        .from('Persona')
+        .select('Persona_Id')
+        .eq('Persona_Id', personaId)
+        .maybeSingle();
+      if (checkErr) throw checkErr;
+      if (remaining) {
+        throw new Error('Persona deletion verification failed');
+      }
       setPersonas(prev => prev.filter(p => p.Persona_Id !== personaId));
       toast({ title: "Persona deleted", description: `${personaName} was removed.` });
     } catch (err) {
