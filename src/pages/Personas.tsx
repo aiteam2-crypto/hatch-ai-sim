@@ -54,6 +54,13 @@ const Personas = () => {
     if (!confirmed) return;
     try {
       setDeletingId(personaId);
+      // Delete dependent conversations first to avoid FK constraint error (409)
+      const { error: convErr } = await supabase
+        .from('Conversation')
+        .delete()
+        .eq('persona_id', personaId);
+      if (convErr) throw convErr;
+
       const { error } = await supabase
         .from('Persona')
         .delete()
