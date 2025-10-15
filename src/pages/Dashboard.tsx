@@ -95,57 +95,20 @@ const Dashboard = () => {
 
   const createChatbotConversation = async (personaId: string, personaName: string) => {
     try {
-      console.log('Fetching persona summary for greeting generation...');
-      
-      // Fetch the persona's Summary to use for greeting generation
-      const { data: personaData, error: fetchError } = await supabase
-        .from('Persona')
-        .select('Summary')
-        .eq('Persona_Id', personaId)
-        .single();
-
-      if (fetchError || !personaData?.Summary) {
-        console.error('Error fetching persona summary:', fetchError);
-        throw new Error('Failed to fetch persona summary for greeting');
-      }
-
       console.log('Generating AI greeting for persona:', personaName);
       
-      // Call edge function to generate authentic in-character greeting
+      // Call edge function to generate authentic in-character greeting and initialize conversation
       const { data: greetingData, error: greetingError } = await supabase.functions.invoke('chat-with-persona', {
         body: {
-          messages: [
-            { 
-              role: 'user', 
-              content: 'Generate your natural, in-character introduction as if meeting someone for the first time. Keep it brief (2-3 sentences), authentic, and welcoming.' 
-            }
-          ],
-          personaName: personaName,
-          personaSummary: personaData.Summary
+          personaId: personaId
         }
       });
 
-      if (greetingError || !greetingData?.message) {
+      if (greetingError || !greetingData) {
         console.error('Error generating AI greeting:', greetingError);
         throw new Error('Failed to generate AI greeting');
       }
 
-      // Store the AI-generated greeting in the database
-      const { error: insertError } = await supabase
-        .from('Conversation')
-        .insert({
-          User_id: user!.id,
-          persona_id: personaId,
-          message: greetingData.message,
-          By_AI: true,
-          Session_ID: crypto.randomUUID()
-        });
-      
-      if (insertError) {
-        console.error('Error saving conversation:', insertError);
-        throw insertError;
-      }
-      
       console.log('AI greeting initialized successfully');
     } catch (error) {
       console.error('Failed to create chatbot conversation:', error);
