@@ -417,41 +417,43 @@ const Dashboard = () => {
                   Persona Created! 🎉
                 </h2>
 
-                {/* Three Panels */}
+                {/* Three Panels - square, clean cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <Card className="p-6 rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/10 to-accent/10">
-                    <h3 className="text-xl font-bold mb-3">About This Persona</h3>
+                  <Card className="p-6 rounded-xl border bg-card shadow-sm h-[260px]">
+                    <h3 className="text-lg font-semibold mb-3">About This Persona</h3>
                     {panelsLoading && !aboutText ? (
                       <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
                     ) : (
-                      <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap">{aboutText ?? "No data yet."}</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-[10] whitespace-pre-wrap">{aboutText ?? "No data yet."}</p>
                     )}
                   </Card>
 
-                  <Card className="p-6 rounded-3xl border border-secondary/30 bg-gradient-to-br from-secondary/10 to-primary/10">
-                    <h3 className="text-xl font-bold mb-3">Key Interests</h3>
+                  <Card className="p-6 rounded-xl border bg-card shadow-sm h-[260px]">
+                    <h3 className="text-lg font-semibold mb-3">Key Interests</h3>
                     {panelsLoading && !keyInterests ? (
                       <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
                     ) : (
                       <div className="flex flex-wrap gap-2">
                         {(keyInterests ?? []).map((it, idx) => (
-                          <span key={idx} className="px-3 py-1 rounded-full bg-card/60 border border-border/50 text-sm">{it}</span>
+                          <span key={idx} className="px-2.5 py-1 rounded-md bg-muted text-foreground/90 text-xs border">
+                            {it}
+                          </span>
                         ))}
-                        {!keyInterests && <span className="text-muted-foreground">No data yet.</span>}
+                        {!keyInterests && <span className="text-muted-foreground text-sm">No data yet.</span>}
                       </div>
                     )}
                   </Card>
 
-                  <Card className="p-6 rounded-3xl border border-accent/30 bg-gradient-to-br from-accent/10 to-secondary/10">
-                    <h3 className="text-xl font-bold mb-3">3 Amazing Questions</h3>
+                  <Card className="p-6 rounded-xl border bg-card shadow-sm h-[260px]">
+                    <h3 className="text-lg font-semibold mb-3">3 Amazing Questions</h3>
                     {panelsLoading && !questions ? (
                       <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
                     ) : (
-                      <ol className="list-decimal list-inside space-y-2">
+                      <ol className="list-decimal list-inside space-y-2 text-sm text-foreground/90">
                         {(questions ?? []).map((q, idx) => (
-                          <li key={idx} className="text-foreground/90">{q}</li>
+                          <li key={idx} className="leading-snug">{q}</li>
                         ))}
-                        {!questions && <span className="text-muted-foreground">No data yet.</span>}
+                        {!questions && <span className="text-muted-foreground text-sm">No data yet.</span>}
                       </ol>
                     )}
                   </Card>

@@ -333,50 +333,7 @@ const Chat = () => {
           </p>
         </header>
 
-      {/* Persona Panels */}
-      <section className="p-6">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Panel 1: About This Persona */}
-          <Card className="p-6 rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/10 to-accent/10">
-            <h3 className="text-xl font-bold mb-3">About This Persona</h3>
-            {panelsLoading && !aboutText ? (
-              <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
-            ) : (
-              <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap">{aboutText ?? "No data yet."}</p>
-            )}
-          </Card>
-
-          {/* Panel 2: Key Interests */}
-          <Card className="p-6 rounded-3xl border border-secondary/30 bg-gradient-to-br from-secondary/10 to-primary/10">
-            <h3 className="text-xl font-bold mb-3">Key Interests</h3>
-            {panelsLoading && !keyInterests ? (
-              <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {(keyInterests ?? []).map((it, idx) => (
-                  <span key={idx} className="px-3 py-1 rounded-full bg-card/60 border border-border/50 text-sm">{it}</span>
-                ))}
-                {!keyInterests && <span className="text-muted-foreground">No data yet.</span>}
-              </div>
-            )}
-          </Card>
-
-          {/* Panel 3: 3 Amazing Questions */}
-          <Card className="p-6 rounded-3xl border border-accent/30 bg-gradient-to-br from-accent/10 to-secondary/10">
-            <h3 className="text-xl font-bold mb-3">3 Amazing Questions</h3>
-            {panelsLoading && !questions ? (
-              <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
-            ) : (
-              <ol className="list-decimal list-inside space-y-2">
-                {(questions ?? []).map((q, idx) => (
-                  <li key={idx} className="text-foreground/90">{q}</li>
-                ))}
-                {!questions && <span className="text-muted-foreground">No data yet.</span>}
-              </ol>
-            )}
-          </Card>
-        </div>
-      </section>
+      {/* Panels removed per requirement: chat-only interface */}
 
       {/* Messages */}
         <ScrollArea className="flex-1 p-6">
