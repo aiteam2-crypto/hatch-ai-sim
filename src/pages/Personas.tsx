@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Header } from "@/components/Header";
 import { useNavigate } from "react-router-dom";
-import { MessageSquare, Loader2 } from "lucide-react";
+import { MessageSquare, Loader2, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -19,6 +19,7 @@ const Personas = () => {
   const { toast } = useToast();
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPersonas = async () => {
@@ -45,6 +46,28 @@ const Personas = () => {
 
     fetchPersonas();
   }, [toast]);
+
+  const handleDelete = async (e: React.MouseEvent, personaId: string, personaName: string) => {
+    e.stopPropagation();
+    if (deletingId) return;
+    const confirmed = window.confirm(`Delete persona "${personaName}"? This cannot be undone.`);
+    if (!confirmed) return;
+    try {
+      setDeletingId(personaId);
+      const { error } = await supabase
+        .from('Persona')
+        .delete()
+        .eq('Persona_Id', personaId);
+      if (error) throw error;
+      setPersonas(prev => prev.filter(p => p.Persona_Id !== personaId));
+      toast({ title: "Persona deleted", description: `${personaName} was removed.` });
+    } catch (err) {
+      console.error('Failed to delete persona', err);
+      toast({ title: "Delete failed", description: "Could not delete persona.", variant: "destructive" });
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -98,7 +121,23 @@ const Personas = () => {
                         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center text-white font-bold text-2xl shadow-lg group-hover:shadow-[var(--glow-primary)] transition-shadow">
                           {persona.Persona_Name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                         </div>
-                        <MessageSquare className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                        <div className="flex items-center gap-2">
+                          <MessageSquare className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="rounded-lg border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
+                            onClick={(e) => handleDelete(e, persona.Persona_Id, persona.Persona_Name)}
+                            disabled={deletingId === persona.Persona_Id}
+                            title="Delete persona"
+                          >
+                            {deletingId === persona.Persona_Id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </div>
                       </div>
 
                       <div>

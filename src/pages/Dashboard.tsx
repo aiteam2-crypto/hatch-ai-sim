@@ -8,6 +8,7 @@ import { User, Lightbulb, MessageCircleQuestion, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { Loader2 as Spinner } from "lucide-react";
 
 interface PersonaSummary {
   name: string;
@@ -35,6 +36,10 @@ const Dashboard = () => {
   const [personaData, setPersonaData] = useState<PersonaData | null>(null);
   const [createdPersonaId, setCreatedPersonaId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'summary' | 'interests' | 'questions'>('summary');
+  const [panelsLoading, setPanelsLoading] = useState(false);
+  const [aboutText, setAboutText] = useState<string | null>(null);
+  const [keyInterests, setKeyInterests] = useState<string[] | null>(null);
+  const [questions, setQuestions] = useState<string[] | null>(null);
 
   const pollForScrapedData = async (personaId: string, maxAttempts = 40): Promise<boolean> => {
     let attempts = 0;
@@ -209,6 +214,37 @@ const Dashboard = () => {
 
       setPersonaData(data);
 
+      // Fetch panels immediately after persona summary is generated
+      try {
+        setPanelsLoading(true);
+        const { data: panelData, error: panelErr } = await supabase.functions.invoke('persona-panels', {
+          body: { personaId: insertedPersonaId }
+        });
+        if (panelErr) throw panelErr;
+        setAboutText((panelData?.about ?? "").trim() || null);
+        let interests: string[] | null = null;
+        try {
+          const raw = (panelData?.interestsRaw ?? "").trim();
+          if (raw) {
+            interests = JSON.parse(raw);
+            if (!Array.isArray(interests)) interests = null;
+          }
+        } catch (_) {
+          interests = null;
+        }
+        setKeyInterests(interests);
+        const qRaw: string = (panelData?.questionsRaw ?? "").trim();
+        const parsedQs = qRaw
+          .split(/\n+/)
+          .map((line: string) => line.replace(/^\d+\.\s*/, "").trim())
+          .filter((s: string) => s.length > 0);
+        setQuestions(parsedQs.length ? parsedQs.slice(0, 3) : null);
+      } catch (e) {
+        console.error('Failed to load panels on generation', e);
+      } finally {
+        setPanelsLoading(false);
+      }
+
       // Step 4: Initialize AI chat with authentic greeting
       toast({
         title: "Initializing chat...",
@@ -380,6 +416,46 @@ const Dashboard = () => {
                 <h2 className="text-4xl gradient-text flex items-center justify-center gap-3 font-bold">
                   Persona Created! 🎉
                 </h2>
+
+                {/* Three Panels */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <Card className="p-6 rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/10 to-accent/10">
+                    <h3 className="text-xl font-bold mb-3">About This Persona</h3>
+                    {panelsLoading && !aboutText ? (
+                      <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
+                    ) : (
+                      <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap">{aboutText ?? "No data yet."}</p>
+                    )}
+                  </Card>
+
+                  <Card className="p-6 rounded-3xl border border-secondary/30 bg-gradient-to-br from-secondary/10 to-primary/10">
+                    <h3 className="text-xl font-bold mb-3">Key Interests</h3>
+                    {panelsLoading && !keyInterests ? (
+                      <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {(keyInterests ?? []).map((it, idx) => (
+                          <span key={idx} className="px-3 py-1 rounded-full bg-card/60 border border-border/50 text-sm">{it}</span>
+                        ))}
+                        {!keyInterests && <span className="text-muted-foreground">No data yet.</span>}
+                      </div>
+                    )}
+                  </Card>
+
+                  <Card className="p-6 rounded-3xl border border-accent/30 bg-gradient-to-br from-accent/10 to-secondary/10">
+                    <h3 className="text-xl font-bold mb-3">3 Amazing Questions</h3>
+                    {panelsLoading && !questions ? (
+                      <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
+                    ) : (
+                      <ol className="list-decimal list-inside space-y-2">
+                        {(questions ?? []).map((q, idx) => (
+                          <li key={idx} className="text-foreground/90">{q}</li>
+                        ))}
+                        {!questions && <span className="text-muted-foreground">No data yet.</span>}
+                      </ol>
+                    )}
+                  </Card>
+                </div>
                 
                 {/* Tab Navigation */}
                 <div className="flex justify-center gap-4 mb-8">

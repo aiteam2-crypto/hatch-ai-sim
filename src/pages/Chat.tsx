@@ -8,6 +8,7 @@ import { Send, Plus, Search, ArrowLeft, LogOut, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Loader2 as Spinner } from "lucide-react";
 
 interface Message {
   role: "user" | "assistant";
@@ -36,6 +37,10 @@ const Chat = () => {
   const [loading, setLoading] = useState(true);
   const [sessionId] = useState(() => crypto.randomUUID());
   const [isSending, setIsSending] = useState(false);
+  const [panelsLoading, setPanelsLoading] = useState(false);
+  const [aboutText, setAboutText] = useState<string | null>(null);
+  const [keyInterests, setKeyInterests] = useState<string[] | null>(null);
+  const [questions, setQuestions] = useState<string[] | null>(null);
 
   useEffect(() => {
     const fetchPersona = async () => {
@@ -119,6 +124,50 @@ const Chat = () => {
 
     fetchPersona();
   }, [id, navigate, toast]);
+
+  // Fetch panel content from edge function once persona is loaded
+  useEffect(() => {
+    const fetchPanels = async () => {
+      if (!persona?.Persona_Id) return;
+      try {
+        setPanelsLoading(true);
+        const { data, error } = await supabase.functions.invoke("persona-panels", {
+          body: { personaId: persona.Persona_Id }
+        });
+        if (error) throw error;
+
+        // About
+        setAboutText((data?.about ?? "").trim() || null);
+
+        // Interests: parse strict JSON array of strings
+        let interests: string[] | null = null;
+        try {
+          const raw = (data?.interestsRaw ?? "").trim();
+          if (raw) {
+            interests = JSON.parse(raw);
+            if (!Array.isArray(interests)) interests = null;
+          }
+        } catch (_) {
+          interests = null;
+        }
+        setKeyInterests(interests);
+
+        // Questions: split numbered list 1., 2., 3.
+        const qRaw: string = (data?.questionsRaw ?? "").trim();
+        const parsedQs = qRaw
+          .split(/\n+/)
+          .map((line: string) => line.replace(/^\d+\.\s*/, "").trim())
+          .filter((s: string) => s.length > 0);
+        setQuestions(parsedQs.length ? parsedQs.slice(0, 3) : null);
+      } catch (e) {
+        console.error("Failed to load persona panels", e);
+        toast({ title: "Panel load failed", description: "Could not load persona insights.", variant: "destructive" });
+      } finally {
+        setPanelsLoading(false);
+      }
+    };
+    fetchPanels();
+  }, [persona, toast]);
 
   const handleSend = async () => {
     if (!input.trim() || !persona || isSending) return;
@@ -284,7 +333,52 @@ const Chat = () => {
           </p>
         </header>
 
-        {/* Messages */}
+      {/* Persona Panels */}
+      <section className="p-6">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Panel 1: About This Persona */}
+          <Card className="p-6 rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/10 to-accent/10">
+            <h3 className="text-xl font-bold mb-3">About This Persona</h3>
+            {panelsLoading && !aboutText ? (
+              <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
+            ) : (
+              <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap">{aboutText ?? "No data yet."}</p>
+            )}
+          </Card>
+
+          {/* Panel 2: Key Interests */}
+          <Card className="p-6 rounded-3xl border border-secondary/30 bg-gradient-to-br from-secondary/10 to-primary/10">
+            <h3 className="text-xl font-bold mb-3">Key Interests</h3>
+            {panelsLoading && !keyInterests ? (
+              <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {(keyInterests ?? []).map((it, idx) => (
+                  <span key={idx} className="px-3 py-1 rounded-full bg-card/60 border border-border/50 text-sm">{it}</span>
+                ))}
+                {!keyInterests && <span className="text-muted-foreground">No data yet.</span>}
+              </div>
+            )}
+          </Card>
+
+          {/* Panel 3: 3 Amazing Questions */}
+          <Card className="p-6 rounded-3xl border border-accent/30 bg-gradient-to-br from-accent/10 to-secondary/10">
+            <h3 className="text-xl font-bold mb-3">3 Amazing Questions</h3>
+            {panelsLoading && !questions ? (
+              <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
+            ) : (
+              <ol className="list-decimal list-inside space-y-2">
+                {(questions ?? []).map((q, idx) => (
+                  <li key={idx} className="text-foreground/90">{q}</li>
+                ))}
+                {!questions && <span className="text-muted-foreground">No data yet.</span>}
+              </ol>
+            )}
+          </Card>
+        </div>
+      </section>
+
+      {/* Messages */}
         <ScrollArea className="flex-1 p-6">
           <div className="max-w-4xl mx-auto space-y-6">
             {messages.map((message, idx) => (
