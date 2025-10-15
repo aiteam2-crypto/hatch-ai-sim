@@ -417,25 +417,62 @@ const Dashboard = () => {
                   Persona Created! 🎉
                 </h2>
 
+                {/* Panel Controls - compact row */}
+                <div className="flex justify-center gap-2 mb-4">
+                  <Button
+                    variant={activeTab === 'summary' ? 'default' : 'outline'}
+                    onClick={() => setActiveTab('summary')}
+                    className="rounded-full px-5 py-2 text-sm"
+                  >
+                    📝 Summary
+                  </Button>
+                  <Button
+                    variant={activeTab === 'interests' ? 'default' : 'outline'}
+                    onClick={() => setActiveTab('interests')}
+                    className="rounded-full px-5 py-2 text-sm"
+                  >
+                    ⚡ Key Interests
+                  </Button>
+                  <Button
+                    variant={activeTab === 'questions' ? 'default' : 'outline'}
+                    onClick={() => setActiveTab('questions')}
+                    className="rounded-full px-5 py-2 text-sm"
+                  >
+                    💡 Questions
+                  </Button>
+                </div>
+
                 {/* Three Panels - square, clean cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <Card className="p-6 rounded-xl border bg-card shadow-sm h-[260px]">
-                    <h3 className="text-lg font-semibold mb-3">About This Persona</h3>
+                  <Card className="p-8 rounded-xl border bg-card shadow-sm h-[280px]">
+                    <h3 className="text-lg font-semibold mb-4">About This Persona</h3>
                     {panelsLoading && !aboutText ? (
                       <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
                     ) : (
-                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-[10] whitespace-pre-wrap">{aboutText ?? "No data yet."}</p>
+                      <>
+                        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-5 whitespace-pre-wrap">
+                          {aboutText ?? "No data yet."}
+                        </p>
+                        {aboutText && (
+                          <button
+                            className="mt-2 text-xs text-primary hover:underline"
+                            onClick={() => window.alert(aboutText)}
+                          >
+                            Read more
+                          </button>
+                        )}
+                      </>
                     )}
                   </Card>
 
-                  <Card className="p-6 rounded-xl border bg-card shadow-sm h-[260px]">
-                    <h3 className="text-lg font-semibold mb-3">Key Interests</h3>
+                  <Card className="p-8 rounded-xl border bg-card shadow-sm h-[280px]">
+                    <h3 className="text-lg font-semibold mb-4">Key Interests</h3>
                     {panelsLoading && !keyInterests ? (
                       <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
                     ) : (
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-2.5">
                         {(keyInterests ?? []).map((it, idx) => (
-                          <span key={idx} className="px-2.5 py-1 rounded-md bg-muted text-foreground/90 text-xs border">
+                          <span key={idx} className="px-2.5 py-1 rounded-md bg-indigo-50 text-gray-900 text-xs border border-indigo-100">
                             {it}
                           </span>
                         ))}
@@ -444,14 +481,17 @@ const Dashboard = () => {
                     )}
                   </Card>
 
-                  <Card className="p-6 rounded-xl border bg-card shadow-sm h-[260px]">
-                    <h3 className="text-lg font-semibold mb-3">3 Amazing Questions</h3>
+                  <Card className="p-8 rounded-xl border bg-card shadow-sm h-[280px]">
+                    <h3 className="text-lg font-semibold mb-4">3 Amazing Questions</h3>
                     {panelsLoading && !questions ? (
                       <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
                     ) : (
-                      <ol className="list-decimal list-inside space-y-2 text-sm text-foreground/90">
+                      <ol className="space-y-2 text-sm text-foreground/90">
                         {(questions ?? []).map((q, idx) => (
-                          <li key={idx} className="leading-snug">{q}</li>
+                          <li key={idx} className="flex gap-3 p-2 rounded-md bg-muted/40">
+                            <span className="font-bold text-primary">{idx + 1}.</span>
+                            <span className="leading-snug">{q}</span>
+                          </li>
                         ))}
                         {!questions && <span className="text-muted-foreground text-sm">No data yet.</span>}
                       </ol>
@@ -459,30 +499,7 @@ const Dashboard = () => {
                   </Card>
                 </div>
                 
-                {/* Tab Navigation */}
-                <div className="flex justify-center gap-4 mb-8">
-                  <Button
-                    variant={activeTab === 'summary' ? 'default' : 'outline'}
-                    onClick={() => setActiveTab('summary')}
-                    className="rounded-2xl px-8 py-5 font-bold transition-all duration-300 hover:scale-105 text-lg"
-                  >
-                    📝 Summary
-                  </Button>
-                  <Button
-                    variant={activeTab === 'interests' ? 'default' : 'outline'}
-                    onClick={() => setActiveTab('interests')}
-                    className="rounded-2xl px-8 py-5 font-bold transition-all duration-300 hover:scale-105 text-lg"
-                  >
-                    ⚡ Key Interests
-                  </Button>
-                  <Button
-                    variant={activeTab === 'questions' ? 'default' : 'outline'}
-                    onClick={() => setActiveTab('questions')}
-                    className="rounded-2xl px-8 py-5 font-bold transition-all duration-300 hover:scale-105 text-lg"
-                  >
-                    💡 Questions
-                  </Button>
-                </div>
+                {/* Tab Navigation moved above into compact row */}
 
                 {/* Tab Content */}
                 <div className="min-h-[400px]">

@@ -337,7 +337,7 @@ const Chat = () => {
 
       {/* Messages */}
         <ScrollArea className="flex-1 p-6">
-          <div className="max-w-4xl mx-auto space-y-6">
+          <div className="max-w-4xl mx-auto space-y-4">
             {messages.map((message, idx) => (
               <div
                 key={idx}
@@ -345,13 +345,13 @@ const Chat = () => {
                 style={{ animationDelay: `${idx * 0.05}s` }}
               >
                 <div
-                  className={`max-w-[80%] p-6 rounded-3xl backdrop-blur-xl transition-all duration-300 hover:scale-[1.02] ${
+                  className={`max-w-[80%] px-4 py-3 rounded-2xl transition-all duration-200 ${
                     message.role === 'user'
-                      ? 'bg-gradient-to-br from-primary/30 to-accent/30 border border-primary/40 shadow-lg glow-primary'
-                      : 'bg-gradient-to-br from-secondary/30 to-accent/30 border border-secondary/40 shadow-lg glow-secondary'
+                      ? 'bg-indigo-100 text-gray-900'
+                      : 'bg-white text-gray-900 border'
                   }`}
                 >
-                  <p className="text-foreground leading-relaxed text-lg">{message.content}</p>
+                  <p className="leading-relaxed text-base">{message.content}</p>
                 </div>
               </div>
             ))}
@@ -359,26 +359,23 @@ const Chat = () => {
         </ScrollArea>
 
         {/* Input Area */}
-        <div className="border-t border-border/30 bg-gradient-to-r from-card/70 via-card/80 to-card/70 backdrop-blur-xl p-8">
+        <div className="border-t border-border/30 bg-card p-6">
           <div className="max-w-4xl mx-auto">
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="Type your message... 💬"
                 disabled={isSending}
-                className="flex-1 rounded-3xl py-7 text-lg border-primary/40 focus:border-primary bg-background/60 backdrop-blur-xl hover:bg-background/70 transition-all font-medium"
+                className="flex-1 rounded-full py-4 text-base bg-white border border-gray-300 focus:border-primary focus:ring-0"
               />
               <Button
                 onClick={handleSend}
                 disabled={isSending || !input.trim()}
-                className="px-10 py-7 rounded-3xl bg-gradient-to-r from-primary via-accent to-secondary hover:shadow-neon transition-all duration-300 hover:scale-105 font-bold text-lg relative overflow-hidden group"
+                className="px-6 py-4 rounded-full bg-gradient-to-r from-primary via-accent to-secondary text-white"
               >
-                <span className="relative z-10">
-                  {isSending ? "Sending..." : "Send 🚀"}
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-secondary via-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                {isSending ? <Loader2 className="w-4 h-4 animate-spin"/> : <Send className="w-4 h-4"/>}
               </Button>
             </div>
           </div>

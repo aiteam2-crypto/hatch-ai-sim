@@ -79,12 +79,12 @@ serve(async (req) => {
       return data.choices?.[0]?.message?.content ?? '';
     }
 
-    // Build the three prompts using the provided templates
-    const aboutPrompt = `You are a professional biographer tasked with writing a concise, single-paragraph introduction for a detailed character summary. Your output must be professional, focused, and not exceed 75 words.\n\nBased on the following persona summary, write a concise, compelling 'About' section that captures their core identity, primary role, and key life context.\n\nPersona Summary:\n---\n${personaSummary}\n---`;
+    // Build the three prompts with conciseness constraints (Part 2)
+    const aboutPrompt = `SYSTEM: When generating content for the dashboard panels, prioritize extreme conciseness and scannability.\n\nYou are a professional biographer writing a single short paragraph. RULES:\n- Max 60 words.\n- Include only: Name, Role, and one key impact/brand mention.\n- No flowery language.\n\nPersona Summary:\n---\n${personaSummary}\n---`;
 
-    const interestsPrompt = `You are a behavioral analyst. Your task is to analyze the following persona summary and identify exactly 4 distinct and highly relevant key interests, hobbies, or professional focus areas.\n\nFormat the response STRICTLY as a JSON array of strings. Do not include any introductory or concluding text.\n\nExample output: ["Interest 1", "Interest 2", "Interest 3", "Interest 4"]\n\nPersona Summary:\n---\n${personaSummary}\n---`;
+    const interestsPrompt = `SYSTEM: Generate concise, scannable tags. RULES:\n- Return STRICT JSON array of strings only.\n- Exactly 4-5 tags, each 2-4 words.\n- No intro/outro text.\n\nPersona Summary:\n---\n${personaSummary}\n---`;
 
-    const questionsPrompt = `You are an expert interviewer and conversation starter. Based on the background and details in the persona summary below, generate exactly 3 highly specific, insightful, and open-ended questions that would lead to a deep, meaningful conversation with this person.\n\nFormat the response STRICTLY as a numbered list (1., 2., 3.) without any surrounding or concluding text.\n\nPersona Summary:\n---\n${personaSummary}\n---`;
+    const questionsPrompt = `SYSTEM: Create impactful, concise interview questions. RULES:\n- Exactly 3 questions.\n- Numbered list (1., 2., 3.) with no extra text.\n- Each must render under 3 lines, direct and specific.\n- No bold markup except proper names if essential.\n\nPersona Summary:\n---\n${personaSummary}\n---`;
 
     // Execute the three calls in parallel
     const [about, interestsRaw, questionsRaw] = await Promise.all([
