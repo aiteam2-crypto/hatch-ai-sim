@@ -99,11 +99,11 @@ const Personas = () => {
         <Header />
 
         {/* Main Content */}
-        <main className="container mx-auto px-6 py-12">
-          <div className="max-w-6xl mx-auto space-y-10 animate-fade-in">
-            <div className="text-center space-y-4">
-              <h1 className="text-5xl md:text-6xl font-bold gradient-text">My Personas 💫</h1>
-              <p className="text-lg text-muted-foreground">Chat with your AI personas anytime</p>
+        <main className="container mx-auto px-4 md:px-6 py-8 md:py-12">
+          <div className="max-w-6xl mx-auto space-y-8 md:space-y-10 animate-fade-in">
+            <div className="text-center space-y-3 md:space-y-4">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold gradient-text">My Personas 💫</h1>
+              <p className="text-base md:text-lg text-muted-foreground">Chat with your AI personas anytime</p>
             </div>
 
             {loading ? (
@@ -127,14 +127,14 @@ const Personas = () => {
                 </div>
               </Card>
             ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
                 {personas.map((persona) => (
                   <Card
                     key={persona.Persona_Id}
-                    className="p-8 glass-card-glow hover:scale-105 transition-all duration-300 cursor-pointer group border-2 border-transparent hover:border-primary/50"
+                    className="p-6 md:p-8 glass-card-glow hover:scale-105 transition-all duration-300 cursor-pointer group border-2 border-transparent hover:border-primary/50"
                     onClick={() => navigate(`/chat/${persona.Persona_Id}`)}
                   >
-                    <div className="space-y-6">
+                    <div className="space-y-4 md:space-y-6">
                       <div className="flex items-start justify-between">
                         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center text-white font-bold text-2xl shadow-lg group-hover:shadow-[var(--glow-primary)] transition-shadow">
                           {persona.Persona_Name.split(' ').map(n => n[0]).join('').slice(0, 2)}

@@ -87,24 +87,24 @@ const Landing = () => {
         </header>
 
         {/* Hero Section - Cluely-inspired */}
-        <section className="container mx-auto px-6 py-24 md:py-40">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="space-y-10 animate-fade-in">
-              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.1]">
-                <span className="gradient-text block mb-3">Create AI Personas.</span>
-                <span className="gradient-text block mb-3">Chat Like Never Before.</span>
-                <span className="text-5xl md:text-6xl">✨💬🚀</span>
+        <section className="container mx-auto px-4 md:px-6 py-16 md:py-24 lg:py-40">
+          <div className="grid lg:grid-cols-2 gap-10 md:gap-16 items-center">
+            <div className="space-y-6 md:space-y-10 animate-fade-in">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight leading-[1.1]">
+                <span className="gradient-text block mb-2 md:mb-3">Create AI Personas.</span>
+                <span className="gradient-text block mb-2 md:mb-3">Chat Like Never Before.</span>
+                <span className="text-3xl md:text-5xl lg:text-6xl">✨💬🚀</span>
               </h1>
               
-              <p className="text-xl md:text-2xl text-foreground/80 max-w-2xl leading-relaxed font-light">
+              <p className="text-base md:text-xl lg:text-2xl text-foreground/80 max-w-2xl leading-relaxed font-light">
                 Turn LinkedIn profiles into living, breathing AI personalities. Experience the future of AI conversations.
               </p>
 
-              <div className="flex flex-wrap gap-4 pt-6">
+              <div className="flex flex-wrap gap-3 md:gap-4 pt-4 md:pt-6">
                 <Button
                   size="lg"
                   onClick={() => navigate("/signin")}
-                  className="text-xl px-16 py-10 rounded-3xl bg-gradient-to-r from-primary via-accent to-secondary hover:shadow-neon transition-all duration-500 hover:scale-110 group font-bold relative overflow-hidden"
+                  className="text-base md:text-xl px-8 md:px-16 py-6 md:py-10 rounded-2xl md:rounded-3xl bg-gradient-to-r from-primary via-accent to-secondary hover:shadow-neon transition-all duration-500 hover:scale-110 group font-bold relative overflow-hidden w-full sm:w-auto"
                 >
                   <span className="relative z-10 flex items-center gap-3">
                     Continue with Google 🚀

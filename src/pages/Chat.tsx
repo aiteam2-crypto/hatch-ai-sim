@@ -4,11 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useParams, useNavigate } from "react-router-dom";
-import { Send, Plus, Search, ArrowLeft, LogOut, Loader2 } from "lucide-react";
+import { Send, Plus, Search, ArrowLeft, LogOut, Loader2, Menu } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 as Spinner } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Message {
   role: "user" | "assistant";
@@ -31,6 +33,7 @@ const Chat = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [persona, setPersona] = useState<Persona | null>(null);
@@ -41,6 +44,7 @@ const Chat = () => {
   const [aboutText, setAboutText] = useState<string | null>(null);
   const [keyInterests, setKeyInterests] = useState<string[] | null>(null);
   const [questions, setQuestions] = useState<string[] | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const fetchPersona = async () => {
@@ -257,87 +261,115 @@ const Chat = () => {
     return null;
   }
 
+  const SidebarContent = () => (
+    <>
+      <div className="p-4 border-b border-border/50 flex items-center justify-between">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleBack}
+          className="rounded-xl hover:bg-primary/10 transition-all"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleSignOut}
+          className="rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
+        >
+          <LogOut className="w-5 h-5" />
+        </Button>
+      </div>
+
+      <div className="p-4 space-y-4">
+        <Button className="w-full justify-start gap-2 bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)] rounded-xl font-semibold">
+          <Plus className="w-4 h-4" />
+          New Chat
+        </Button>
+
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search chats..."
+            className="pl-10 rounded-xl"
+          />
+        </div>
+      </div>
+
+      <ScrollArea className="flex-1 px-4">
+        <div className="space-y-2 pb-4">
+          {mockChats.map((chat) => (
+            <Card
+              key={chat.id}
+              className="p-3 cursor-pointer hover:bg-primary/5 transition-colors border border-transparent hover:border-primary/30 rounded-xl"
+            >
+              <h4 className="font-medium text-sm mb-1">{chat.name}</h4>
+              <p className="text-xs text-muted-foreground truncate">{chat.preview}</p>
+            </Card>
+          ))}
+        </div>
+      </ScrollArea>
+
+      <div className="p-4 border-t border-border/50">
+        <ThemeToggle />
+      </div>
+    </>
+  );
+
   return (
     <div className="min-h-screen flex relative overflow-hidden">
       {/* Cluely-style animated gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary via-secondary to-accent opacity-20 animate-gradient-shift"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(162,89,255,0.15),transparent_60%),radial-gradient(ellipse_at_top_right,rgba(42,250,223,0.15),transparent_60%)]"></div>
       
-      {/* Floating emoji particles */}
-      <div className="absolute top-20 left-20 text-4xl animate-float opacity-30">💬</div>
-      <div className="absolute top-40 right-32 text-3xl animate-float opacity-20" style={{ animationDelay: '2s' }}>⚡</div>
-      <div className="absolute bottom-32 left-40 text-4xl animate-float opacity-25" style={{ animationDelay: '4s' }}>🌈</div>
+      {/* Floating emoji particles - hidden on mobile */}
+      <div className="hidden md:block absolute top-20 left-20 text-4xl animate-float opacity-30">💬</div>
+      <div className="hidden md:block absolute top-40 right-32 text-3xl animate-float opacity-20" style={{ animationDelay: '2s' }}>⚡</div>
+      <div className="hidden md:block absolute bottom-32 left-40 text-4xl animate-float opacity-25" style={{ animationDelay: '4s' }}>🌈</div>
 
-      {/* Sidebar */}
-      <aside className="w-80 border-r border-border/50 backdrop-blur-sm bg-background/80 flex flex-col relative z-10">
-        <div className="p-4 border-b border-border/50 flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleBack}
-            className="rounded-xl hover:bg-primary/10 transition-all"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleSignOut}
-            className="rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
-          >
-            <LogOut className="w-5 h-5" />
-          </Button>
-        </div>
-
-        <div className="p-4 space-y-4">
-          <Button className="w-full justify-start gap-2 bg-gradient-to-r from-primary to-secondary hover:shadow-[var(--glow-primary)] rounded-xl font-semibold">
-            <Plus className="w-4 h-4" />
-            New Chat
-          </Button>
-
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search chats..."
-              className="pl-10 rounded-xl"
-            />
-          </div>
-        </div>
-
-        <ScrollArea className="flex-1 px-4">
-          <div className="space-y-2 pb-4">
-            {mockChats.map((chat) => (
-              <Card
-                key={chat.id}
-                className="p-3 cursor-pointer hover:bg-primary/5 transition-colors border border-transparent hover:border-primary/30 rounded-xl"
-              >
-                <h4 className="font-medium text-sm mb-1">{chat.name}</h4>
-                <p className="text-xs text-muted-foreground truncate">{chat.preview}</p>
-              </Card>
-            ))}
-          </div>
-        </ScrollArea>
-
-        <div className="p-4 border-t border-border/50">
-          <ThemeToggle />
-        </div>
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex w-80 border-r border-border/50 backdrop-blur-sm bg-background/80 flex-col relative z-10">
+        <SidebarContent />
       </aside>
+
+      {/* Mobile Sidebar Drawer */}
+      {isMobile && (
+        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+          <SheetContent side="left" className="w-80 p-0 bg-background/95 backdrop-blur-sm">
+            <SidebarContent />
+          </SheetContent>
+        </Sheet>
+      )}
 
       {/* Main Chat Area */}
       <main className="flex-1 flex flex-col relative z-10">
         {/* Chat Header */}
-        <header className="p-6 border-b border-border/50 backdrop-blur-sm bg-background/80">
-          <h1 className="text-3xl font-bold gradient-text">Ask Me Anything 💬</h1>
-          <p className="text-sm text-muted-foreground mt-2">
-            Chatting with <span className="text-primary font-semibold">{persona.Persona_Name}</span> ⚡
-          </p>
+        <header className="p-4 md:p-6 border-b border-border/50 backdrop-blur-sm bg-background/80">
+          <div className="flex items-center gap-3">
+            {isMobile && (
+              <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="md:hidden">
+                    <Menu className="w-5 h-5" />
+                  </Button>
+                </SheetTrigger>
+              </Sheet>
+            )}
+            <div className="flex-1">
+              <h1 className="text-xl md:text-3xl font-bold gradient-text">Ask Me Anything 💬</h1>
+              <p className="text-xs md:text-sm text-muted-foreground mt-1">
+                Chatting with <span className="text-primary font-semibold">{persona.Persona_Name}</span> ⚡
+              </p>
+            </div>
+          </div>
         </header>
 
       {/* Panels removed per requirement: chat-only interface */}
 
       {/* Messages */}
-        <ScrollArea className="flex-1 p-6">
-          <div className="max-w-4xl mx-auto space-y-4">
+        <ScrollArea className="flex-1 p-3 md:p-6">
+          <div className="max-w-4xl mx-auto space-y-3 md:space-y-4">
             {messages.map((message, idx) => (
               <div
                 key={idx}
@@ -345,13 +377,13 @@ const Chat = () => {
                 style={{ animationDelay: `${idx * 0.05}s` }}
               >
                 <div
-                  className={`max-w-[80%] px-4 py-3 rounded-2xl transition-all duration-200 ${
+                  className={`max-w-[85%] md:max-w-[80%] px-3 md:px-4 py-2 md:py-3 rounded-2xl transition-all duration-200 ${
                     message.role === 'user'
                       ? 'bg-indigo-100 text-gray-900'
                       : 'bg-white text-gray-900 border'
                   }`}
                 >
-                  <p className="leading-relaxed text-base">{message.content}</p>
+                  <p className="leading-relaxed text-sm md:text-base">{message.content}</p>
                 </div>
               </div>
             ))}
@@ -359,21 +391,21 @@ const Chat = () => {
         </ScrollArea>
 
         {/* Input Area */}
-        <div className="border-t border-border/30 bg-card p-6">
+        <div className="border-t border-border/30 bg-card p-3 md:p-6">
           <div className="max-w-4xl mx-auto">
-            <div className="flex gap-3">
+            <div className="flex gap-2 md:gap-3">
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="Type your message... 💬"
                 disabled={isSending}
-                className="flex-1 rounded-full py-4 text-base bg-white border border-gray-300 focus:border-primary focus:ring-0"
+                className="flex-1 rounded-full py-3 md:py-4 text-sm md:text-base bg-white border border-gray-300 focus:border-primary focus:ring-0"
               />
               <Button
                 onClick={handleSend}
                 disabled={isSending || !input.trim()}
-                className="px-6 py-4 rounded-full bg-gradient-to-r from-primary via-accent to-secondary text-white"
+                className="px-4 md:px-6 py-3 md:py-4 rounded-full bg-gradient-to-r from-primary via-accent to-secondary text-white"
               >
                 {isSending ? <Loader2 className="w-4 h-4 animate-spin"/> : <Send className="w-4 h-4"/>}
               </Button>

@@ -328,24 +328,24 @@ const Dashboard = () => {
         <Header showBackButton={false} />
 
         {/* Main Content */}
-        <main className="container mx-auto px-6 py-12">
-          <div className="max-w-4xl mx-auto space-y-12 animate-fade-in">
-            <div className="flex items-center justify-between">
-              <h1 className="text-5xl md:text-7xl font-bold gradient-text leading-tight">
+        <main className="container mx-auto px-4 md:px-6 py-8 md:py-12">
+          <div className="max-w-4xl mx-auto space-y-8 md:space-y-12 animate-fade-in">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold gradient-text leading-tight">
                 GENERATE YOUR AI PERSONA
               </h1>
               <Button
                 variant="outline"
                 onClick={() => navigate("/personas")}
-                className="hover:border-primary hover:bg-primary/5 transition-all duration-300 rounded-xl"
+                className="hover:border-primary hover:bg-primary/5 transition-all duration-300 rounded-xl whitespace-nowrap"
               >
                 My Personas
               </Button>
             </div>
 
           {/* Input Section */}
-          <Card className="p-10 glass-card-glow">
-            <div className="grid md:grid-cols-2 gap-6">
+          <Card className="p-6 md:p-10 glass-card-glow">
+            <div className="grid sm:grid-cols-2 gap-4 md:gap-6">
               <div className="space-y-3">
                 <label className="text-sm font-semibold text-foreground flex items-center gap-2">
                   👤 Name of the person
