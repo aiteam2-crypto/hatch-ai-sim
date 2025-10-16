@@ -41,11 +41,11 @@ const Dashboard = () => {
   const [keyInterests, setKeyInterests] = useState<string[] | null>(null);
   const [questions, setQuestions] = useState<string[] | null>(null);
 
-  const pollForScrapedData = async (personaId: string, maxAttempts = 40): Promise<boolean> => {
+  const pollForScrapedData = async (personaId: string, maxAttempts = 80): Promise<boolean> => {
     let attempts = 0;
     
     while (attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds between checks
+      await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds between checks
       attempts++;
       
       console.log(`Polling attempt ${attempts} - checking if n8n scraped data...`);
