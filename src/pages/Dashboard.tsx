@@ -417,102 +417,43 @@ const Dashboard = () => {
                   Persona Created! 🎉
                 </h2>
 
-                {/* Panel Controls - compact row */}
-                <div className="flex justify-center gap-2 mb-4">
+                {/* Tab Navigation */}
+                <div className="flex justify-center gap-4 mb-8">
                   <Button
                     variant={activeTab === 'summary' ? 'default' : 'outline'}
                     onClick={() => setActiveTab('summary')}
-                    className="rounded-full px-5 py-2 text-sm"
+                    className="rounded-2xl px-8 py-5 font-bold transition-all duration-300 hover:scale-105 text-lg"
                   >
                     📝 Summary
                   </Button>
                   <Button
                     variant={activeTab === 'interests' ? 'default' : 'outline'}
                     onClick={() => setActiveTab('interests')}
-                    className="rounded-full px-5 py-2 text-sm"
+                    className="rounded-2xl px-8 py-5 font-bold transition-all duration-300 hover:scale-105 text-lg"
                   >
                     ⚡ Key Interests
                   </Button>
                   <Button
                     variant={activeTab === 'questions' ? 'default' : 'outline'}
                     onClick={() => setActiveTab('questions')}
-                    className="rounded-full px-5 py-2 text-sm"
+                    className="rounded-2xl px-8 py-5 font-bold transition-all duration-300 hover:scale-105 text-lg"
                   >
                     💡 Questions
                   </Button>
                 </div>
 
-                {/* Three Panels - square, clean cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <Card className="p-8 rounded-xl border bg-card shadow-sm h-[280px]">
-                    <h3 className="text-lg font-semibold mb-4">About This Persona</h3>
-                    {panelsLoading && !aboutText ? (
-                      <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
-                    ) : (
-                      <>
-                        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-5 whitespace-pre-wrap">
-                          {aboutText ?? "No data yet."}
-                        </p>
-                        {aboutText && (
-                          <button
-                            className="mt-2 text-xs text-primary hover:underline"
-                            onClick={() => window.alert(aboutText)}
-                          >
-                            Read more
-                          </button>
-                        )}
-                      </>
-                    )}
-                  </Card>
-
-                  <Card className="p-8 rounded-xl border bg-card shadow-sm h-[280px]">
-                    <h3 className="text-lg font-semibold mb-4">Key Interests</h3>
-                    {panelsLoading && !keyInterests ? (
-                      <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
-                    ) : (
-                      <div className="flex flex-wrap gap-2.5">
-                        {(keyInterests && keyInterests.length > 0) ? keyInterests.slice(0,3).map((it, idx) => (
-                          <span key={idx} className="px-3 py-1.5 rounded-full bg-indigo-50 text-gray-900 text-xs border border-indigo-100">
-                            {it}
-                          </span>
-                        )) : (
-                          <span className="text-muted-foreground text-sm">No interests available</span>
-                        )}
-                      </div>
-                    )}
-                  </Card>
-
-                  <Card className="p-8 rounded-xl border bg-card shadow-sm h-[220px] relative">
-                    <h3 className="text-lg font-semibold mb-4">Conversation Starters</h3>
-                    {panelsLoading && !questions ? (
-                      <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
-                    ) : (
-                      <div className="overflow-y-auto max-h-[140px] pr-2">
-                        {(questions && questions.length > 0 ? questions : [
-                          "What's a recent challenge that sharpened your leadership?",
-                          "Which product decision drove the most impact this year?",
-                          "How do you mentor teams through ambiguity?"
-                        ]).map((q, idx) => (
-                          <div key={idx} className="mb-3 p-3 rounded-xl border bg-muted/40 text-sm text-foreground/90">
-                            <div className="font-bold text-primary mb-1">{idx + 1}.</div>
-                            <div className="leading-snug">{q}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </Card>
-                </div>
-                
-                {/* Tab Navigation moved above into compact row */}
-
                 {/* Tab Content */}
                 <div className="min-h-[400px]">
                   {activeTab === 'summary' && (
                     <div className="p-8 rounded-3xl bg-gradient-to-br from-primary/10 to-secondary/10 backdrop-blur-xl border border-primary/30 animate-fade-in">
-                      <h3 className="text-2xl font-bold mb-6 gradient-text">Summary</h3>
-                      <p className="text-lg text-foreground/90 leading-relaxed mb-6">
-                        {personaData.personaSummary.shortBio}
-                      </p>
+                      <h3 className="text-2xl font-bold mb-6 gradient-text">About This Persona</h3>
+                      {panelsLoading && !aboutText ? (
+                        <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
+                      ) : (
+                        <p className="text-lg text-foreground/90 leading-relaxed mb-6 whitespace-pre-wrap">
+                          {aboutText ?? personaData.personaSummary.shortBio}
+                        </p>
+                      )}
                       <div className="grid md:grid-cols-2 gap-6">
                         <div className="p-5 rounded-2xl bg-card/50 backdrop-blur border border-border/50">
                           <h4 className="font-bold text-primary mb-2">Personality Tone</h4>
@@ -528,8 +469,21 @@ const Dashboard = () => {
                   
                   {activeTab === 'interests' && (
                     <div className="p-8 rounded-3xl bg-gradient-to-br from-secondary/10 to-accent/10 backdrop-blur-xl border border-secondary/30 animate-fade-in">
-                      <h3 className="text-2xl font-bold mb-6 gradient-text">Key Interests & Expertise</h3>
-                      <div className="space-y-6">
+                      <h3 className="text-2xl font-bold mb-6 gradient-text">Key Interests</h3>
+                      {panelsLoading && !keyInterests ? (
+                        <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
+                      ) : (
+                        <div className="flex flex-wrap gap-3">
+                          {(keyInterests && keyInterests.length > 0) ? keyInterests.map((it, idx) => (
+                            <span key={idx} className="px-6 py-3 rounded-full bg-gradient-to-r from-secondary/30 to-accent/30 border border-secondary/50 text-base font-bold hover:scale-110 transition-transform duration-300 cursor-pointer">
+                              {it}
+                            </span>
+                          )) : (
+                            <span className="text-muted-foreground text-lg">No interests available</span>
+                          )}
+                        </div>
+                      )}
+                      <div className="mt-8 space-y-6">
                         <div>
                           <h4 className="font-bold text-lg mb-4 text-secondary">Areas of Expertise</h4>
                           <div className="flex flex-wrap gap-3">
@@ -564,8 +518,31 @@ const Dashboard = () => {
                   
                   {activeTab === 'questions' && (
                     <div className="p-8 rounded-3xl bg-gradient-to-br from-accent/10 to-primary/10 backdrop-blur-xl border border-accent/30 animate-fade-in">
-                      <h3 className="text-2xl font-bold mb-6 gradient-text">Interesting Questions to Ask</h3>
-                      <div className="max-h-[400px] overflow-y-auto pr-2">
+                      <h3 className="text-2xl font-bold mb-6 gradient-text">Questions to Ask</h3>
+                      <div className="max-h-[500px] overflow-y-auto pr-2">
+                        {/* Conversation Starters */}
+                        {panelsLoading && !questions ? (
+                          <div className="flex items-center gap-2 text-muted-foreground mb-6"><Spinner className="w-4 h-4 animate-spin"/> Loading conversation starters...</div>
+                        ) : (
+                          <>
+                            <h4 className="font-bold text-lg mb-4 text-accent">Conversation Starters</h4>
+                            <div className="mb-8">
+                              {(questions && questions.length > 0 ? questions : [
+                                "What's a recent challenge that sharpened your leadership?",
+                                "Which product decision drove the most impact this year?",
+                                "How do you mentor teams through ambiguity?"
+                              ]).map((q, idx) => (
+                                <div key={idx} className="mb-4 p-4 rounded-xl border bg-muted/40 text-foreground/90">
+                                  <div className="font-bold text-primary mb-2">{idx + 1}.</div>
+                                  <div className="leading-relaxed">{q}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                        
+                        {/* Interesting Questions to Ask */}
+                        <h4 className="font-bold text-lg mb-4 text-secondary">Interesting Questions to Ask</h4>
                         <ul className="space-y-4">
                           {personaData.personaSummary.exampleResponses.map((question: string, idx: number) => (
                             <li 
