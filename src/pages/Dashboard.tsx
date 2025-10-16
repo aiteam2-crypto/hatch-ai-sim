@@ -471,11 +471,13 @@ const Dashboard = () => {
                       <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
                     ) : (
                       <div className="flex flex-wrap gap-2.5">
-                        {((keyInterests && keyInterests.length > 0) ? keyInterests.slice(0,3) : ["AI in SaaS","Growth Hacking","Team Leadership"]).map((it, idx) => (
+                        {(keyInterests && keyInterests.length > 0) ? keyInterests.slice(0,3).map((it, idx) => (
                           <span key={idx} className="px-3 py-1.5 rounded-full bg-indigo-50 text-gray-900 text-xs border border-indigo-100">
                             {it}
                           </span>
-                        ))}
+                        )) : (
+                          <span className="text-muted-foreground text-sm">No interests available</span>
+                        )}
                       </div>
                     )}
                   </Card>
@@ -485,21 +487,17 @@ const Dashboard = () => {
                     {panelsLoading && !questions ? (
                       <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
                     ) : (
-                      <div className="relative">
-                        <div className="overflow-hidden">
-                          <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2">
-                            {(questions && questions.length > 0 ? questions : [
-                              "What's a recent challenge that sharpened your leadership?",
-                              "Which product decision drove the most impact this year?",
-                              "How do you mentor teams through ambiguity?"
-                            ]).map((q, idx) => (
-                              <div key={idx} className="min-w-[260px] snap-center shrink-0 p-4 rounded-xl border bg-muted/40 text-sm text-foreground/90">
-                                <div className="font-bold text-primary mb-1">{idx + 1}.</div>
-                                <div className="leading-snug">{q}</div>
-                              </div>
-                            ))}
+                      <div className="overflow-y-auto max-h-[140px] pr-2">
+                        {(questions && questions.length > 0 ? questions : [
+                          "What's a recent challenge that sharpened your leadership?",
+                          "Which product decision drove the most impact this year?",
+                          "How do you mentor teams through ambiguity?"
+                        ]).map((q, idx) => (
+                          <div key={idx} className="mb-3 p-3 rounded-xl border bg-muted/40 text-sm text-foreground/90">
+                            <div className="font-bold text-primary mb-1">{idx + 1}.</div>
+                            <div className="leading-snug">{q}</div>
                           </div>
-                        </div>
+                        ))}
                       </div>
                     )}
                   </Card>
@@ -567,18 +565,20 @@ const Dashboard = () => {
                   {activeTab === 'questions' && (
                     <div className="p-8 rounded-3xl bg-gradient-to-br from-accent/10 to-primary/10 backdrop-blur-xl border border-accent/30 animate-fade-in">
                       <h3 className="text-2xl font-bold mb-6 gradient-text">Interesting Questions to Ask</h3>
-                      <ul className="space-y-4">
-                        {personaData.personaSummary.exampleResponses.map((question: string, idx: number) => (
-                          <li 
-                            key={idx} 
-                            className="flex items-start gap-4 text-lg text-foreground/90 p-5 rounded-2xl bg-card/30 hover:bg-card/50 transition-all duration-300 animate-fade-in border border-border/30 hover:border-primary/40 group"
-                            style={{ animationDelay: `${idx * 0.15}s` }}
-                          >
-                            <span className="text-3xl group-hover:scale-125 transition-transform">💬</span>
-                            <span className="leading-relaxed">{question}</span>
-                          </li>
-                        ))}
-                      </ul>
+                      <div className="max-h-[400px] overflow-y-auto pr-2">
+                        <ul className="space-y-4">
+                          {personaData.personaSummary.exampleResponses.map((question: string, idx: number) => (
+                            <li 
+                              key={idx} 
+                              className="flex items-start gap-4 text-lg text-foreground/90 p-5 rounded-2xl bg-card/30 hover:bg-card/50 transition-all duration-300 animate-fade-in border border-border/30 hover:border-primary/40 group"
+                              style={{ animationDelay: `${idx * 0.15}s` }}
+                            >
+                              <span className="text-3xl group-hover:scale-125 transition-transform">💬</span>
+                              <span className="leading-relaxed">{question}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     </div>
                   )}
                 </div>
