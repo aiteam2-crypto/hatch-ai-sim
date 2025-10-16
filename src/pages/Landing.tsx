@@ -12,19 +12,12 @@ import {
   Shield, 
   Target,
   ArrowRight,
-  Quote,
-  ChevronRight
+  Quote
 } from "lucide-react";
 
 const Landing = () => {
   const navigate = useNavigate();
 
-  const personas = [
-    { name: "Tech CEO", role: "Innovation Leader", icon: Brain, color: "from-primary to-accent" },
-    { name: "Investor", role: "Venture Capital", icon: Target, color: "from-secondary to-primary" },
-    { name: "Designer", role: "Creative Director", icon: Sparkles, color: "from-accent to-secondary" },
-    { name: "Engineer", role: "Tech Architect", icon: Zap, color: "from-primary to-secondary" },
-  ];
 
   const features = [
     {
@@ -133,47 +126,6 @@ const Landing = () => {
           </div>
         </section>
 
-        {/* Showcase Section */}
-        <section className="container mx-auto px-6 py-20">
-          <div className="text-center mb-16 space-y-4">
-            <h2 className="text-4xl md:text-6xl font-bold">
-              <span className="gradient-text">Meet AI Personas</span>
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Interact with realistic simulations of professionals across industries
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {personas.map((persona, index) => {
-              const Icon = persona.icon;
-              return (
-                <Card 
-                  key={index}
-                  className="group glass-card border-border/50 hover:border-primary/50 transition-all duration-500 hover:scale-105 hover:shadow-[var(--shadow-neon)] cursor-pointer overflow-hidden"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <CardContent className="p-8 space-y-4 relative">
-                    <div className={`absolute inset-0 bg-gradient-to-br ${persona.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
-                    
-                    <div className="relative">
-                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                        <Icon className="w-8 h-8 text-primary" />
-                      </div>
-                      
-                      <h3 className="text-2xl font-bold mb-2">{persona.name}</h3>
-                      <p className="text-muted-foreground">{persona.role}</p>
-                      
-                      <div className="mt-4 flex items-center text-sm text-primary group-hover:translate-x-2 transition-transform duration-300">
-                        Chat Now <ChevronRight className="ml-1 w-4 h-4" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </section>
 
         {/* How It Works Section */}
         <section className="container mx-auto px-6 py-20">
