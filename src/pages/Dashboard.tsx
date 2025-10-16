@@ -471,30 +471,36 @@ const Dashboard = () => {
                       <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
                     ) : (
                       <div className="flex flex-wrap gap-2.5">
-                        {(keyInterests ?? []).map((it, idx) => (
-                          <span key={idx} className="px-2.5 py-1 rounded-md bg-indigo-50 text-gray-900 text-xs border border-indigo-100">
+                        {((keyInterests && keyInterests.length > 0) ? keyInterests.slice(0,3) : ["AI in SaaS","Growth Hacking","Team Leadership"]).map((it, idx) => (
+                          <span key={idx} className="px-3 py-1.5 rounded-full bg-indigo-50 text-gray-900 text-xs border border-indigo-100">
                             {it}
                           </span>
                         ))}
-                        {!keyInterests && <span className="text-muted-foreground text-sm">No data yet.</span>}
                       </div>
                     )}
                   </Card>
 
-                  <Card className="p-8 rounded-xl border bg-card shadow-sm h-[280px]">
-                    <h3 className="text-lg font-semibold mb-4">3 Amazing Questions</h3>
+                  <Card className="p-8 rounded-xl border bg-card shadow-sm h-[220px] relative">
+                    <h3 className="text-lg font-semibold mb-4">Conversation Starters</h3>
                     {panelsLoading && !questions ? (
                       <div className="flex items-center gap-2 text-muted-foreground"><Spinner className="w-4 h-4 animate-spin"/> Loading...</div>
                     ) : (
-                      <ol className="space-y-2 text-sm text-foreground/90">
-                        {(questions ?? []).map((q, idx) => (
-                          <li key={idx} className="flex gap-3 p-2 rounded-md bg-muted/40">
-                            <span className="font-bold text-primary">{idx + 1}.</span>
-                            <span className="leading-snug">{q}</span>
-                          </li>
-                        ))}
-                        {!questions && <span className="text-muted-foreground text-sm">No data yet.</span>}
-                      </ol>
+                      <div className="relative">
+                        <div className="overflow-hidden">
+                          <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2">
+                            {(questions && questions.length > 0 ? questions : [
+                              "What's a recent challenge that sharpened your leadership?",
+                              "Which product decision drove the most impact this year?",
+                              "How do you mentor teams through ambiguity?"
+                            ]).map((q, idx) => (
+                              <div key={idx} className="min-w-[260px] snap-center shrink-0 p-4 rounded-xl border bg-muted/40 text-sm text-foreground/90">
+                                <div className="font-bold text-primary mb-1">{idx + 1}.</div>
+                                <div className="leading-snug">{q}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
                     )}
                   </Card>
                 </div>
