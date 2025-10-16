@@ -36,30 +36,36 @@ serve(async (req) => {
       throw new Error('Persona not found');
     }
 
-    // Check if both LinkedIn_data and Articles are populated (accept strings or objects)
+    // Check if LinkedIn_data or Articles are populated (accept strings or objects)
     const hasLinkedInData = (typeof personaData.LinkedIn_data === 'string' && personaData.LinkedIn_data.trim() !== '') ||
       (personaData.LinkedIn_data && typeof personaData.LinkedIn_data === 'object' && Object.keys(personaData.LinkedIn_data).length > 0);
     
     const hasArticles = (typeof personaData.Articles === 'string' && personaData.Articles.trim() !== '') ||
       (personaData.Articles && typeof personaData.Articles === 'object' && Object.keys(personaData.Articles).length > 0);
 
-    if (!hasLinkedInData || !hasArticles) {
-      console.error('LinkedIn_data or Articles not yet populated');
-      throw new Error('Required data not yet available. Please wait for scraping to complete.');
+    if (!hasLinkedInData && !hasArticles) {
+      console.error('Neither LinkedIn_data nor Articles are populated');
+      throw new Error('No scraped data available yet. Please wait for scraping to complete.');
     }
 
-    console.log('Both LinkedIn_data and Articles are populated, proceeding with persona generation');
+    console.log('Proceeding with persona generation using available sources:', { hasLinkedInData, hasArticles });
 
-    // Handle both string and object formats for scraped data
-    const linkedInContent = typeof personaData.LinkedIn_data === 'string' 
-      ? personaData.LinkedIn_data 
-      : JSON.stringify(personaData.LinkedIn_data);
-    
-    const articlesContent = typeof personaData.Articles === 'string'
-      ? personaData.Articles
-      : JSON.stringify(personaData.Articles);
+    // Handle both string and object formats for scraped data, include whichever exist
+    const sections: string[] = [];
+    if (hasLinkedInData) {
+      const linkedInContent = typeof personaData.LinkedIn_data === 'string' 
+        ? personaData.LinkedIn_data 
+        : JSON.stringify(personaData.LinkedIn_data);
+      sections.push(`LinkedIn Data:\n${linkedInContent}`);
+    }
+    if (hasArticles) {
+      const articlesContent = typeof personaData.Articles === 'string'
+        ? personaData.Articles
+        : JSON.stringify(personaData.Articles);
+      sections.push(`Articles:\n${articlesContent}`);
+    }
 
-    const scrapedData = `LinkedIn Data:\n${linkedInContent}\n\nArticles:\n${articlesContent}`;
+    const scrapedData = sections.join('\n\n');
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
